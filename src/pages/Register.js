@@ -14,14 +14,14 @@ const courses = {
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     '& fieldset': {
-      borderColor: 'black', // Default border color
+      borderColor: 'black',
     },
     '&:hover fieldset': {
-      borderColor: 'blue', // Border color on hover
-      boxShadow: '0 0 5px blue', // Glow effect on hover
+      borderColor: 'blue',
+      boxShadow: '0 0 5px blue',
     },
     '&.Mui-focused fieldset': {
-      borderColor: 'blue', // Border color when focused
+      borderColor: 'blue',
     },
   },
 }));
@@ -40,6 +40,7 @@ const Register = () => {
   });
   
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,12 +49,10 @@ const Register = () => {
   };
 
   const handleTogglePassword = () => {
-    if (formData.password) {
-      setFormData({ ...formData, showPassword: !formData.showPassword });
-    }
+    setFormData({ ...formData, showPassword: !formData.showPassword });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
     Object.keys(formData).forEach((key) => {
@@ -81,12 +80,22 @@ const Register = () => {
       newErrors.password = "Password must contain at least one special character.";
     }
     setErrors(newErrors);
+    
     if (Object.keys(newErrors).length === 0) {
-      // Store regNumber and password in local storage
-      localStorage.setItem("username", formData.regNumber);
-      localStorage.setItem("password", formData.password);
-      console.log("Form Submitted", formData);
-      navigate("/login"); // Navigate to login page after successful registration
+      setLoading(true);
+      try {
+        // Simulate API call
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        localStorage.setItem("username", formData.regNumber);
+        localStorage.setItem("password", formData.password);
+        console.log("Form Submitted", formData);
+        navigate("/login"); // Navigate to login page after successful registration
+      } catch (error) {
+        console.error("Registration failed", error);
+        // Handle error here (not shown)
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -140,10 +149,12 @@ const Register = () => {
                 )
               }}
               helperText={errors.password} error={!!errors.password}
-              sx={{ mt: 6 }} // Increased spacing above the password field
+              sx={{ mt: 6 }}
             />
             <StyledTextField label="Confirm Password" name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} required fullWidth helperText={errors.confirmPassword} error={!!errors.confirmPassword} />
-            <Button type="submit" variant="contained" color="success" fullWidth sx={{ height: "48px" }}>Register</Button>
+            <Button type="submit" variant="contained" color="success" fullWidth sx={{ height: "48px" }} disabled={loading}>
+              {loading ? "Registering..." : "Register"}
+            </Button>
             <Typography variant="body2" align="center" sx={{ mt: 2 }}>
               Already have an account? <a href="/login" style={{ color: "#1565c0", textDecoration: "none" }} onClick={() => navigate("/login")}>Sign in</a>
             </Typography>
