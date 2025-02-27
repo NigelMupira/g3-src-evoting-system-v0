@@ -1,7 +1,13 @@
+import React from "react";
+import { Button } from "@mui/material";
+
 function App() {
   return (
-    <div>
-      <h1>Welcome to My React App</h1>
+    <div style={{ textAlign: "center", marginTop: "20px" }}>
+      <h1>Welcome to the SRC E-Voting System</h1>
+      <Button variant="contained" color="primary">
+        Test MUI Button
+      </Button>
     </div>
   );
 }
