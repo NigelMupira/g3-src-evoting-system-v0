@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Container, TextField, Button, Typography, Box, Paper, MenuItem, IconButton, InputAdornment, AppBar, Toolbar } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Home } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
 
@@ -92,7 +92,6 @@ const Register = () => {
         navigate("/login"); // Navigate to login page after successful registration
       } catch (error) {
         console.error("Registration failed", error);
-        // Handle error here (not shown)
       } finally {
         setLoading(false);
       }
@@ -103,7 +102,12 @@ const Register = () => {
     <Box sx={{ minHeight: "100vh", background: "rgba(100, 200, 225, 0.3)", backdropFilter: "blur(15px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
       <AppBar position="fixed" color="primary">
         <Toolbar>
-          <Typography variant="h6">SRC E-Voting System</Typography>
+          <IconButton edge="start" color="inherit" onClick={() => navigate("/")}>
+            <Home />
+          </IconButton>
+          <Typography variant="h6" onClick={() => navigate("/")} sx={{ cursor: "pointer" }}>
+            SRC E-Voting System
+          </Typography>
         </Toolbar>
       </AppBar>
       <Container maxWidth="sm" sx={{ mt: 12 }}>
