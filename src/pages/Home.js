@@ -1,7 +1,10 @@
 import React from "react";
 import { AppBar, Toolbar, Typography, Button, Container, Box, Paper } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const navigate = useNavigate();
+
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f5f5", display: "flex", flexDirection: "column" }}>
       {/* Navigation Bar */}
@@ -9,8 +12,12 @@ const Home = () => {
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <Typography variant="h6">SRC E-Voting System</Typography>
           <Box>
-            <Button color="inherit" sx={{ mr: 2 }}>Login</Button>
-            <Button variant="contained" color="success">Sign Up</Button>
+            <Button color="inherit" sx={{ mr: 2 }} onClick={() => navigate("/login")}>
+             Login
+            </Button>
+            <Button variant="contained" color="success" onClick={() => navigate("/register")}>
+              Sign Up
+            </Button>
           </Box>
         </Toolbar>
       </AppBar>
@@ -21,7 +28,9 @@ const Home = () => {
         <Typography variant="h6" color="textSecondary" sx={{ mt: 2, maxWidth: "600px" }}>
           Participate in the SRC elections securely and fairly using our online e-voting system. View candidate manifestos, cast your vote, and see results in real-time.
         </Typography>
-        <Button variant="contained" color="primary" sx={{ mt: 4, px: 4, py: 1.5 }}>Get Started</Button>
+        <Button variant="contained" color="primary" sx={{ mt: 4, px: 4, py: 1.5 }} onClick={() => navigate("/register")}>
+          Get Started
+        </Button>
       </Container>
 
       {/* Election Details Section */}
