@@ -24,7 +24,7 @@ const Dashboard = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", overflow: "hidden" }}>
       {/* Top Bar */}
       <AppBar position="fixed" sx={{ width: "100%", backgroundColor: "#007bff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
@@ -71,8 +71,8 @@ const Dashboard = () => {
       </Drawer>
       
       {/* Main Content */}
-      <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", pt: 8 }}>
-        <Box sx={{ flexGrow: 1, p: 3, display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "rgba(100, 200, 225, 0.3)", minHeight: "100vh" }}>
+      <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", pt: 8, overflowY: "auto" }}>
+        <Box sx={{ flexGrow: 1, p: 3, display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "rgba(100, 200, 225, 0.3)", height: "100%", overflow: "auto" }}>
           {renderContent()}
         </Box>
       </Box>
