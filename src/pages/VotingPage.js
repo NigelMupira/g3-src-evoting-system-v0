@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Box, Typography, Grid, Card, CardContent, Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
+// Mock candidate data (replace with dynamic data from backend or config)
 const positions = [
   {
     title: "Position 1",
@@ -41,14 +43,23 @@ const positions = [
 
 const VotingPage = () => {
   const [selectedVotes, setSelectedVotes] = useState({});
+  const navigate = useNavigate();
 
   const handleVote = (position, candidateId) => {
     setSelectedVotes((prev) => ({ ...prev, [position]: candidateId }));
   };
 
-  const handleConfirmVote = () => {
-    console.log("Votes submitted:", selectedVotes);
-    alert("Your votes have been submitted successfully!");
+  const handleConfirmVote = async () => {
+    try {
+      // Simulate API call (replace with actual API call)
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      console.log("Votes submitted:", selectedVotes);
+      alert("Your votes have been submitted successfully!");
+      navigate("/dashboard/results"); // Navigate to results page after successful submission
+    } catch (error) {
+      console.error("Vote submission failed", error);
+      alert("Vote submission failed. Please try again.");
+    }
   };
 
   return (
@@ -76,7 +87,10 @@ const VotingPage = () => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "space-between"
+                  justifyContent: "space-between",
+                  cursor: "pointer",
+                  transition: "transform 0.2s",
+                  "&:hover": { transform: "scale(1.05)" }
                 }}>
                   <Box 
                     sx={{ 
@@ -105,6 +119,7 @@ const VotingPage = () => {
                           "&:hover": { bgcolor: selectedVotes[position.title] === candidate.id ? "blue" : "darkgrey" }
                         }}
                         onClick={() => handleVote(position.title, candidate.id)}
+                        aria-label={`Vote for ${candidate.name}`}
                       >
                         CAST VOTE
                       </Button>
@@ -116,6 +131,7 @@ const VotingPage = () => {
                           borderRadius: "8px", 
                           width: "100%" 
                         }}
+                        aria-label={`View manifesto for ${candidate.name}`}
                       >
                         MANIFESTO
                       </Button>
@@ -141,6 +157,7 @@ const VotingPage = () => {
           borderRadius: "10px",
           "&:hover": { bgcolor: "#218838" }
         }}
+        aria-label="Confirm Votes"
       >
         CONFIRM VOTES
       </Button>

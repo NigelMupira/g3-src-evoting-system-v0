@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, AppBar, Toolbar, Typography, Drawer, List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
 import { Dashboard as DashboardIcon, HowToVote, BarChart, ExitToApp } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 import DashboardHome from "./DashboardHome";
 import VotingPage from "./VotingPage";
 import ResultsPage from "./ResultsPage";
@@ -9,6 +10,11 @@ const drawerWidth = 240;
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate("/login");
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -46,15 +52,30 @@ const Dashboard = () => {
         <Box>
           <Toolbar />
           <List>
-            <ListItem button onClick={() => setActiveTab("Dashboard")} sx={{ backgroundColor: activeTab === "Dashboard" ? "#007bff" : "transparent", color: activeTab === "Dashboard" ? "white" : "black" }}>
+            <ListItem 
+              button 
+              onClick={() => setActiveTab("Dashboard")} 
+              sx={{ backgroundColor: activeTab === "Dashboard" ? "#007bff" : "transparent", color: activeTab === "Dashboard" ? "white" : "black" }}
+              aria-label="Dashboard"
+            >
               <ListItemIcon sx={{ color: activeTab === "Dashboard" ? "white" : "black" }}><DashboardIcon /></ListItemIcon>
               <ListItemText primary="Dashboard" />
             </ListItem>
-            <ListItem button onClick={() => setActiveTab("Vote")} sx={{ backgroundColor: activeTab === "Vote" ? "#007bff" : "transparent", color: activeTab === "Vote" ? "white" : "black" }}>
+            <ListItem 
+              button 
+              onClick={() => setActiveTab("Vote")} 
+              sx={{ backgroundColor: activeTab === "Vote" ? "#007bff" : "transparent", color: activeTab === "Vote" ? "white" : "black" }}
+              aria-label="Vote"
+            >
               <ListItemIcon sx={{ color: activeTab === "Vote" ? "white" : "black" }}><HowToVote /></ListItemIcon>
               <ListItemText primary="Vote" />
             </ListItem>
-            <ListItem button onClick={() => setActiveTab("Results")} sx={{ backgroundColor: activeTab === "Results" ? "#007bff" : "transparent", color: activeTab === "Results" ? "white" : "black" }}>
+            <ListItem 
+              button 
+              onClick={() => setActiveTab("Results")} 
+              sx={{ backgroundColor: activeTab === "Results" ? "#007bff" : "transparent", color: activeTab === "Results" ? "white" : "black" }}
+              aria-label="Results"
+            >
               <ListItemIcon sx={{ color: activeTab === "Results" ? "white" : "black" }}><BarChart /></ListItemIcon>
               <ListItemText primary="Results" />
             </ListItem>
@@ -62,7 +83,12 @@ const Dashboard = () => {
         </Box>
         <Box>
           <List>
-            <ListItem button onClick={() => setActiveTab("Logout")} sx={{ color: "#d32f2f" }}>
+            <ListItem 
+              button 
+              onClick={handleLogout} 
+              sx={{ color: "#d32f2f" }}
+              aria-label="Logout"
+            >
               <ListItemIcon sx={{ color: "#d32f2f" }}><ExitToApp /></ListItemIcon>
               <ListItemText primary="Logout" />
             </ListItem>
