@@ -1,10 +1,7 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 
-const ResultsPage = () => {
-  const navigate = useNavigate();
-
+const ResultsPage = ({ onNavigateToVote }) => {
   return (
     <Box sx={{ textAlign: "center", p: 4 }}>
       <Typography variant="h4" fontWeight="bold" mb={4}>
@@ -17,7 +14,7 @@ const ResultsPage = () => {
       <Button
         variant="contained"
         color="primary"
-        onClick={() => navigate("/dashboard/vote")} // Use absolute path
+        onClick={onNavigateToVote} // Use the passed function
         sx={{ mt: 2, px: 4, py: 1.5, fontSize: "16px", borderRadius: "8px" }}
         aria-label="Go to Voting Page"
       >
