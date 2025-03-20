@@ -13,7 +13,12 @@
     "@testing-library/user-event": "^14.6.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+<<<<<<< HEAD
     "react-router-dom": "^7.3.0",
+=======
+    "react-helmet": "^6.1.0",
+    "react-router-dom": "^7.2.0",
+>>>>>>> 98215f08ba20038265cfed02f40d295b80a70186
     "react-scripts": "^5.0.1",
     "web-vitals": "^4.2.4"
   },
