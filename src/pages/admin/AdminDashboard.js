@@ -21,9 +21,6 @@ const AdminDashboard = () => {
       case "Dashboard":
         return (
           <Box sx={{ p: 4, textAlign: "center" }}>
-            <Typography variant="h4" fontWeight="bold" mb={4}>
-              Admin Dashboard
-            </Typography>
 
             {/* Quick Access Grid */}
             <Grid container spacing={4} justifyContent="center">
