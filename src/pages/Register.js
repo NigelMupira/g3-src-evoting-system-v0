@@ -1,8 +1,22 @@
-import React, { useState } from "react";
+// ============================================
+// Registration Page Component
+// ============================================
+// Handles new user account creation
+// Validates all inputs including password strength
+// Creates accounts but does NOT auto-login (user must go to login page)
+
+import React, { useState, useEffect } from "react";
 import { Container, TextField, Button, Typography, Box, Paper, MenuItem, IconButton, InputAdornment, AppBar, Toolbar, LinearProgress } from "@mui/material";
 import { Visibility, VisibilityOff, Home } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/material/styles";
+import { useAuth } from "../context/AuthContext";
+
+// ============================================
+// Schools and Courses Data
+// ============================================
+// Hardcoded list of schools and available courses
+// In production, this would come from backend
 
 const schools = ["Engineering", "Business", "Arts"];
 const courses = {
@@ -11,6 +25,9 @@ const courses = {
   Arts: ["ART301", "ART302", "ART303"],
 };
 
+// ============================================
+// Styled Components
+// ============================================
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     '& fieldset': { borderColor: 'black' },
@@ -21,6 +38,15 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 
 const Register = () => {
   const navigate = useNavigate();
+  const { register, isLoading, error: authError, isAuthenticated } = useAuth();
+
+  // ============================================
+  // State Management
+  // ============================================
+  // formData: All registration form inputs
+  // errors: Validation errors for each field
+  // successMessage: Displayed after successful registration
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -33,7 +59,23 @@ const Register = () => {
   });
 
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // ============================================
+  // Effect: Redirect if already logged in
+  // ============================================
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
+
+  // ============================================
+  // Password Strength Calculator
+  // ============================================
+  // Calculates password strength on 0-5 scale
+  // Used to display visual strength indicator
+  // Requirements: length, uppercase, lowercase, numbers, special chars
 
   const calculatePasswordStrength = (password) => {
     let strength = 0;
@@ -47,11 +89,19 @@ const Register = () => {
 
   const passwordStrength = calculatePasswordStrength(formData.password);
 
+  // ============================================
+  // Input Change Handler
+  // ============================================
+  // Validates registration number format in real-time
+  // Removes spaces for cleaner input
+  // Updates course list when school is selected
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = value.replace(/\s/g, "");
     setFormData({ ...formData, [name]: type === "checkbox" ? checked : newValue });
 
+    // Validate registration number format (A000000A)
     if (name === "regNumber") {
       if (newValue.length !== 8) {
         setErrors({ ...errors, regNumber: "Reg Number must be 8 characters long." });
@@ -62,21 +112,41 @@ const Register = () => {
       }
     }
 
+    // Clear password error on change
     if (name === "password") {
       setErrors({ ...errors, password: newValue ? "" : "Required field" });
     }
   };
 
+  // ============================================
+  // Password Visibility Toggle
+  // ============================================
   const handleTogglePassword = () => {
     setFormData({ ...formData, showPassword: !formData.showPassword });
   };
+
+  // ============================================
+  // Form Submission Handler
+  // ============================================
+  // Validates ALL fields before submission
+  // Password requirements enforced (length, uppercase, lowercase, number, special char)
+  // Passwords must match
+  // On success: redirects to login after 2 seconds
+  // On error: displays error message
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     let newErrors = {};
 
+    // ============================================
+    // Validation: Personal Information
+    // ============================================
     if (!formData.firstName) newErrors.firstName = "Required field";
     if (!formData.lastName) newErrors.lastName = "Required field";
+
+    // ============================================
+    // Validation: Registration Number
+    // ============================================
     if (!formData.regNumber) {
       newErrors.regNumber = "Required field";
     } else if (formData.regNumber.length !== 8) {
@@ -85,9 +155,16 @@ const Register = () => {
       newErrors.regNumber = "Invalid Reg Number.";
     }
 
+    // ============================================
+    // Validation: School and Course
+    // ============================================
     if (!formData.school) newErrors.school = "Required field";
     if (!formData.course) newErrors.course = "Required field";
 
+    // ============================================
+    // Validation: Password Requirements
+    // ============================================
+    // Must have: 8+ chars, uppercase, lowercase, number, special character
     if (!formData.password) {
       newErrors.password = "Required field";
     } else if (formData.password.length < 8) {
@@ -102,6 +179,9 @@ const Register = () => {
       newErrors.password = "Password must contain at least one special character.";
     }
 
+    // ============================================
+    // Validation: Password Confirmation
+    // ============================================
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Required field";
     } else if (formData.password !== formData.confirmPassword) {
@@ -110,23 +190,36 @@ const Register = () => {
 
     setErrors(newErrors);
 
+    // ============================================
+    // Submit if validation passes
+    // ============================================
     if (Object.keys(newErrors).length === 0) {
-      setLoading(true);
       try {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        console.log("Form Submitted", formData);
-        navigate("/login");
-      } catch (error) {
-        console.error("Registration failed", error);
-        setErrors({ ...errors, api: "Registration failed. Please try again." });
-      } finally {
-        setLoading(false);
+        // Call register from AuthContext
+        // Backend will hash password and store user
+        await register({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          regNumber: formData.regNumber,
+          school: formData.school,
+          course: formData.course,
+          password: formData.password,
+        });
+
+        // Show success message then redirect to login
+        setSuccessMessage("Account created successfully! Redirecting to login...");
+        setTimeout(() => navigate("/login"), 2000);
+      } catch (err) {
+        setErrors({ ...errors, api: err.message || "Registration failed. Please try again." });
       }
     }
   };
 
   return (
     <Box sx={{ minHeight: "100vh", background: "rgba(100, 200, 225, 0.3)", backdropFilter: "blur(15px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+      {/* ============================================ */}
+      {/* Navigation Bar */}
+      {/* ============================================ */}
       <AppBar position="fixed" color="primary">
         <Toolbar>
           <IconButton edge="start" color="inherit" onClick={() => navigate("/")} aria-label="Home">
@@ -137,12 +230,20 @@ const Register = () => {
           </Typography>
         </Toolbar>
       </AppBar>
+
+      {/* ============================================ */}
+      {/* Registration Form Container */}
+      {/* ============================================ */}
       <Container maxWidth="sm" sx={{ mt: 12 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography variant="h5" fontWeight="bold" gutterBottom>
             Registration
           </Typography>
+
           <Box component="form" onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {/* ============================================ */}
+            {/* Personal Information Inputs */}
+            {/* ============================================ */}
             <Box sx={{ display: "flex", gap: 2 }}>
               <StyledTextField
                 label="First Name"
@@ -167,6 +268,10 @@ const Register = () => {
                 aria-label="Last Name"
               />
             </Box>
+
+            {/* ============================================ */}
+            {/* Registration Number Input */}
+            {/* ============================================ */}
             <StyledTextField
               label="Reg Number"
               name="regNumber"
@@ -178,6 +283,10 @@ const Register = () => {
               error={!!errors.regNumber}
               aria-label="Registration Number"
             />
+
+            {/* ============================================ */}
+            {/* School and Course Selection */}
+            {/* ============================================ */}
             <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
               <StyledTextField
                 select
@@ -217,6 +326,10 @@ const Register = () => {
                 ))}
               </StyledTextField>
             </Box>
+
+            {/* ============================================ */}
+            {/* Password Input with Visibility Toggle */}
+            {/* ============================================ */}
             <StyledTextField
               label="Password"
               name="password"
@@ -240,6 +353,12 @@ const Register = () => {
               error={!!errors.password}
               aria-label="Password"
             />
+
+            {/* ============================================ */}
+            {/* Password Strength Indicator */}
+            {/* ============================================ */}
+            {/* Visual feedback on password strength */}
+            {/* Color changes from red (weak) to green (strong) */}
             {formData.password && (
               <Box sx={{ width: "100%", mt: 1 }}>
                 <LinearProgress
@@ -269,6 +388,10 @@ const Register = () => {
                 </Typography>
               </Box>
             )}
+
+            {/* ============================================ */}
+            {/* Confirm Password Input */}
+            {/* ============================================ */}
             <StyledTextField
               label="Confirm Password"
               name="confirmPassword"
@@ -281,17 +404,30 @@ const Register = () => {
               error={!!errors.confirmPassword}
               aria-label="Confirm Password"
             />
+
+            {/* ============================================ */}
+            {/* Submit Button */}
+            {/* ============================================ */}
             <Button
               type="submit"
               variant="contained"
               color="success"
               fullWidth
               sx={{ height: "48px", transition: "transform 0.2s", "&:hover": { transform: "scale(1.02)" } }}
-              disabled={loading}
+              disabled={isLoading}
             >
-              {loading ? "Registering..." : "Register"}
+              {isLoading ? "Registering..." : "Register"}
             </Button>
-            {errors.api && <Typography color="error" align="center">{errors.api}</Typography>}
+
+            {/* ============================================ */}
+            {/* Error and Success Messages */}
+            {/* ============================================ */}
+            {(errors.api || authError) && <Typography color="error" align="center">{errors.api || authError}</Typography>}
+            {successMessage && <Typography color="success" align="center">{successMessage}</Typography>}
+
+            {/* ============================================ */}
+            {/* Link to Login Page */}
+            {/* ============================================ */}
             <Typography variant="body2" align="center" sx={{ mt: 2 }}>
               Already have an account? <a href="/login" style={{ color: "#1565c0", textDecoration: "none" }} onClick={() => navigate("/login")}>Sign in</a>
             </Typography>

@@ -1,3 +1,9 @@
+// ============================================
+// Manage Candidates Page
+// ============================================
+// Admin page for adding, editing, and deleting candidates
+// Currently shows placeholder; will have form for candidate CRUD operations
+
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
@@ -15,3 +21,4 @@ const ManageCandidates = () => {
 };
 
 export default ManageCandidates;
+

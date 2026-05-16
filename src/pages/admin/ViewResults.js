@@ -1,3 +1,9 @@
+// ============================================
+// View Results Page
+// ============================================
+// Admin page for viewing and analyzing election results
+// Currently shows placeholder; will display real-time results and charts
+
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
@@ -15,3 +21,4 @@ const ViewResults = () => {
 };
 
 export default ViewResults;
+

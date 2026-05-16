@@ -1,3 +1,9 @@
+// ============================================
+// Results Page Component
+// ============================================
+// Displays election results after voting ends
+// Currently shows placeholder; will connect to backend for real results
+
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 
@@ -11,10 +17,12 @@ const ResultsPage = ({ onNavigateToVote }) => {
       <Typography variant="h6" color="text.secondary" mb={3}>
         No results are available at this time.
       </Typography>
+
+      {/* Button to return to voting page */}
       <Button
         variant="contained"
         color="primary"
-        onClick={onNavigateToVote} // Use the passed function
+        onClick={onNavigateToVote}
         sx={{ mt: 2, px: 4, py: 1.5, fontSize: "16px", borderRadius: "8px" }}
         aria-label="Go to Voting Page"
       >
@@ -25,3 +33,4 @@ const ResultsPage = ({ onNavigateToVote }) => {
 };
 
 export default ResultsPage;
+

@@ -1,3 +1,10 @@
+/* ============================================
+   Global Styles
+   ============================================
+   Base styles for the entire application
+   These styles apply to all components unless overridden
+*/
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -7,7 +14,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ============================================
+   Code Block Styles
+   ============================================
+   Styles for code blocks and monospace text
+*/
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+

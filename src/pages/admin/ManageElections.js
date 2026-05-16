@@ -1,3 +1,9 @@
+// ============================================
+// Manage Elections Page
+// ============================================
+// Admin page for creating, editing, and managing elections
+// Currently shows placeholder; will have form for election CRUD operations
+
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
@@ -15,3 +21,4 @@ const ManageElections = () => {
 };
 
 export default ManageElections;
+
