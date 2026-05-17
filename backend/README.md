@@ -11,36 +11,62 @@ This folder contains the PHP backend for the E-Voting System.
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and configure database connection
-2. Install dependencies: `composer install`
-3. Set up MySQL database: `mysql -u root < ../database/schemas/schema.sql`
-4. Run: `php -S localhost:8000`
+1. Copy `.env.example` to `.env` and configure:
+   ```bash
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASS=
+   DB_NAME=evoting_system
+   JWT_SECRET=your_very_secret_key_change_this
+   ```
+
+2. Install dependencies:
+   ```bash
+   composer install
+   ```
+
+3. Create MySQL database:
+   ```bash
+   mysql -u root -p < ../database/schemas/schema.sql
+   ```
+
+4. Start PHP server:
+   ```bash
+   php -S localhost:8000
+   ```
 
 ## API Endpoints
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout user
-- `POST /api/auth/refresh` - Refresh JWT token
+### Authentication (Implemented ✅)
+- `POST /api/auth/register.php` - Register new user
+  - Body: `{ regNumber, password, firstName, lastName, school?, course? }`
+  - Returns: User data
+  
+- `POST /api/auth/login.php` - Login user
+  - Body: `{ regNumber, password }`
+  - Returns: JWT token + user data
+  
+- `POST /api/auth/logout.php` - Logout user
+  - Headers: `Authorization: Bearer {token}`
+  - Returns: Success message
 
-### Elections
-- `GET /api/elections/list` - Get all elections
-- `GET /api/elections/{id}` - Get election details
-- `POST /api/elections/create` - Create election (admin)
-- `PUT /api/elections/update` - Update election (admin)
-- `DELETE /api/elections/{id}` - Delete election (admin)
+### Elections (To be implemented)
+- `GET /api/elections/list.php` - Get all elections
+- `GET /api/elections/{id}.php` - Get election details
+- `POST /api/elections/create.php` - Create election (admin)
+- `PUT /api/elections/update.php` - Update election (admin)
+- `DELETE /api/elections/{id}.php` - Delete election (admin)
 
-### Candidates
-- `GET /api/candidates/list?election_id={id}` - Get candidates for election
-- `POST /api/candidates/create` - Add candidate (admin)
-- `PUT /api/candidates/update` - Update candidate (admin)
-- `DELETE /api/candidates/{id}` - Delete candidate (admin)
+### Candidates (To be implemented)
+- `GET /api/candidates/list.php?election_id={id}` - Get candidates for election
+- `POST /api/candidates/create.php` - Add candidate (admin)
+- `PUT /api/candidates/update.php` - Update candidate (admin)
+- `DELETE /api/candidates/{id}.php` - Delete candidate (admin)
 
-### Voting
-- `POST /api/votes/submit` - Submit vote
-- `GET /api/votes/results?election_id={id}` - Get election results
-- `POST /api/votes/validate` - Validate if user can vote
+### Voting (To be implemented)
+- `POST /api/votes/submit.php` - Submit vote
+- `GET /api/votes/results.php?election_id={id}` - Get election results
+- `POST /api/votes/validate.php` - Validate if user can vote
 
 ## Security
 

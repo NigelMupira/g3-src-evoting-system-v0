@@ -1,0 +1,14 @@
+{
+  "name": "evoting-system/backend",
+  "description": "PHP backend for SRC E-Voting System",
+  "require": {
+    "php": ">=8.0",
+    "firebase/php-jwt": "^6.10",
+    "vlucas/phpdotenv": "^5.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "."
+    }
+  }
+}
