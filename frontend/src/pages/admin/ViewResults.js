@@ -2,249 +2,141 @@
 // View Results Page
 // ============================================
 // Admin interface for viewing detailed election results
-// Displays analytics, vote counts, and winner information
+// Displays analytics, vote counts, and winner information from backend
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  Grid,
-  LinearProgress,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Chip,
+  Box, Container, Typography, Card, Grid, LinearProgress, Table,
+  TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip,
+  CircularProgress, Alert, FormControl, InputLabel, Select, MenuItem,
 } from "@mui/material";
 import { EmojiEvents, TrendingUp } from "@mui/icons-material";
-
-const mockResults = {
-  totalVotes: 956,
-  turnout: 78.5,
-  positions: [
-    {
-      id: 1,
-      title: "President",
-      candidates: [
-        { name: "John Doe", votes: 342, percentage: 45.2 },
-        { name: "Jane Smith", votes: 289, percentage: 38.1 },
-        { name: "Mike Johnson", votes: 127, percentage: 16.7 },
-      ],
-      totalVotes: 758,
-      winner: "John Doe",
-    },
-    {
-      id: 2,
-      title: "Vice President",
-      candidates: [
-        { name: "Sarah Lee", votes: 412, percentage: 52.3 },
-        { name: "Tom Wilson", votes: 215, percentage: 27.2 },
-        { name: "Lisa Chen", votes: 161, percentage: 20.5 },
-      ],
-      totalVotes: 788,
-      winner: "Sarah Lee",
-    },
-  ],
-};
+import { getAllElections } from "../../services/electionService";
+import { getElectionResults } from "../../services/voteService";
 
 const ViewResults = () => {
+  const [elections, setElections] = useState([]);
+  const [selectedElection, setSelectedElection] = useState(null);
+  const [results, setResults] = useState([]);
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const r = await getAllElections();
+        setElections(r.data || []);
+        if (r.data?.length) setSelectedElection(r.data[0].id);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedElection) return;
+    const fetch = async () => {
+      try {
+        const r = await getElectionResults(selectedElection);
+        setResults(r.data || []);
+        setStats(r.stats || {});
+      } catch (e) {
+        setError(e.message);
+      }
+    };
+    fetch();
+  }, [selectedElection]);
+
+  const positions = Object.values(results.reduce((g, r) => {
+    const k = r.position_id;
+    if (!g[k]) g[k] = { positionId: k, positionName: r.position_name, candidates: [], totalVotes: 0 };
+    g[k].candidates.push(r);
+    g[k].totalVotes += r.vote_count || 0;
+    return g;
+  }, {}));
+
+  const totalVotes = stats.totalVotes || 0;
+  const uniqueVoters = stats.uniqueVoters || 0;
+  const turnout = uniqueVoters > 0 ? ((totalVotes / (uniqueVoters * Math.max(positions.length, 1))) * 100).toFixed(1) : 0;
+
+  if (loading) return <Container sx={{ py: 4, textAlign: "center" }}><CircularProgress /></Container>;
+  if (error) return <Container sx={{ py: 4 }}><Alert severity="error">{error}</Alert></Container>;
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          sx={{
-            fontWeight: 700,
-            color: "#1A1A1A",
-            mb: 1,
-          }}
-        >
-          Election Results Analytics
-        </Typography>
-        <Typography variant="body2" sx={{ color: "#666666" }}>
-          Comprehensive results and statistics
-        </Typography>
-      </Box>
+      <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>Election Results (Admin)</Typography>
 
-      {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6}>
-          <Card sx={{ p: 3, background: "linear-gradient(135deg, #003087 0%, #0052CC 100%)", color: "white" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Box>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Total Votes
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {mockResults.totalVotes}
-                </Typography>
-              </Box>
-              <TrendingUp sx={{ fontSize: 40, opacity: 0.5 }} />
-            </Box>
+      <FormControl sx={{ mb: 3, minWidth: 300 }}>
+        <InputLabel>Election</InputLabel>
+        <Select value={selectedElection || ""} onChange={(e) => setSelectedElection(e.target.value)} label="Election">
+          {elections.map((e) => <MenuItem key={e.id} value={e.id}>{e.name}</MenuItem>)}
+        </Select>
+      </FormControl>
+
+      {/* Stats */}
+      <Grid container spacing={2} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2, background: "linear-gradient(135deg, #003087 0%, #0052CC 100%)", color: "white" }}>
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>Total Votes</Typography>
+            <Typography variant="h4">{totalVotes}</Typography>
           </Card>
         </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <Card sx={{ p: 3, background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", color: "white" }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Box>
-                <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                  Voter Turnout
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                  {mockResults.turnout}%
-                </Typography>
-              </Box>
-              <EmojiEvents sx={{ fontSize: 40, opacity: 0.5 }} />
-            </Box>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2, background: "linear-gradient(135deg, #D4A017 0%, #E5B64F 100%)", color: "white" }}>
+            <Typography variant="h3">{turnout}%</Typography>
+            <Typography variant="body2">Participation</Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2, background: "linear-gradient(135deg, #22C55E 0%, #16A34A 100%)", color: "white" }}>
+            <Typography variant="body2">Positions</Typography>
+            <Typography variant="h4">{positions.length}</Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ p: 2, background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)", color: "white" }}>
+            <EmojiEvents sx={{ fontSize: 32 }} />
+            <Typography variant="body2">Unique Voters</Typography>
+            <Typography variant="h4">{uniqueVoters}</Typography>
           </Card>
         </Grid>
       </Grid>
 
-      {/* Results by Position */}
-      {mockResults.positions.map((position) => (
-        <Card
-          key={position.id}
-          sx={{
-            mb: 3,
-            borderRadius: "0.75rem",
-            border: "1px solid #E0E0E0",
-            overflow: "hidden",
-          }}
-        >
-          {/* Position Header */}
-          <Box
-            sx={{
-              backgroundColor: "#F8F9FA",
-              p: 2.5,
-              borderBottom: "1px solid #E0E0E0",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#1A1A1A" }}>
-              {position.title}
-            </Typography>
-            <Chip
-              icon={<EmojiEvents />}
-              label={position.winner}
-              color="success"
-              sx={{ fontWeight: 600 }}
-            />
-          </Box>
-
-          {/* Candidates */}
-          <Box sx={{ p: 3 }}>
-            {position.candidates.map((candidate, index) => (
-              <Box key={index} sx={{ mb: index < position.candidates.length - 1 ? 2 : 0 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mb: 0.75,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 600,
-                      color: "#1A1A1A",
-                    }}
-                  >
-                    {candidate.name}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 700,
-                      color: "#003087",
-                    }}
-                  >
-                    {candidate.votes} ({candidate.percentage}%)
-                  </Typography>
-                </Box>
-                <LinearProgress
-                  variant="determinate"
-                  value={candidate.percentage}
-                  sx={{
-                    height: 8,
-                    borderRadius: "4px",
-                    backgroundColor: "#E0E0E0",
-                    "& .MuiLinearProgress-bar": {
-                      backgroundColor:
-                        candidate.name === position.winner ? "#22C55E" : "#003087",
-                      borderRadius: "4px",
-                    },
-                  }}
-                />
-              </Box>
-            ))}
-          </Box>
-        </Card>
-      ))}
-
-      {/* Detailed Table */}
-      <Card
-        sx={{
-          borderRadius: "0.75rem",
-          border: "1px solid #E0E0E0",
-          overflow: "hidden",
-        }}
-      >
-        <Box
-          sx={{
-            backgroundColor: "#F8F9FA",
-            p: 2.5,
-            borderBottom: "1px solid #E0E0E0",
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 700, color: "#1A1A1A" }}>
-            Winners Summary
-          </Typography>
-        </Box>
-
-        <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
+      {/* Results Table */}
+      {positions.length > 0 && (
+        <TableContainer component={Paper}>
           <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "#F8F9FA" }}>
+            <TableHead sx={{ backgroundColor: "#F8F9FA" }}>
+              <TableRow>
                 <TableCell sx={{ fontWeight: 700 }}>Position</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Winner</TableCell>
                 <TableCell sx={{ fontWeight: 700 }}>Votes</TableCell>
-                <TableCell sx={{ fontWeight: 700 }}>Vote Share</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>%</TableCell>
+                <TableCell sx={{ fontWeight: 700 }}>Total</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {mockResults.positions.map((position) => {
-                const winner = position.candidates.find(
-                  (c) => c.name === position.winner
-                );
+              {positions.map((pos) => {
+                const winner = pos.candidates.reduce((p, c) => (p.vote_count || 0) > (c.vote_count || 0) ? p : c);
+                const pct = pos.totalVotes > 0 ? ((winner.vote_count / pos.totalVotes) * 100).toFixed(1) : 0;
                 return (
-                  <TableRow key={position.id}>
-                    <TableCell sx={{ fontWeight: 600 }}>
-                      {position.title}
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 600, color: "#22C55E" }}>
-                      {winner.name}
-                    </TableCell>
-                    <TableCell>{winner.votes}</TableCell>
-                    <TableCell>{winner.percentage}%</TableCell>
+                  <TableRow key={pos.positionId}>
+                    <TableCell sx={{ fontWeight: 600 }}>{pos.positionName}</TableCell>
+                    <TableCell sx={{ fontWeight: 600, color: "#22C55E" }}>{winner.name}</TableCell>
+                    <TableCell>{winner.vote_count}</TableCell>
+                    <TableCell>{pct}%</TableCell>
+                    <TableCell>{pos.totalVotes}</TableCell>
                   </TableRow>
                 );
               })}
             </TableBody>
           </Table>
         </TableContainer>
-      </Card>
+      )}
     </Container>
   );
 };
 
 export default ViewResults;
-
