@@ -2,81 +2,53 @@
 // Admin Service
 // ============================================
 // API calls for admin-specific operations
-// Handles management of candidates, positions, and system operations
+// Handles election/candidate management (requires admin role)
 
 import { apiGet, apiPost, apiPut, apiDelete } from "./api";
 
-/**
- * Fetches all candidates (with optional filters)
- * Admin can filter by election or position
- */
-export const getAllCandidates = async (electionId = null) => {
-  const query = electionId ? `?electionId=${electionId}` : "";
-  return apiGet(`/api/candidates/list.php${query}`);
+// ============================================
+// Candidate Management
+// ============================================
+
+// Get all candidates for an election
+export const getCandidates = async (electionId) => {
+  return apiGet(`/api/candidates/list.php?election_id=${electionId}`);
 };
 
-/**
- * Creates a new candidate
- * Admin provides candidate details and assigns to position
- * Requires election ID and position ID
- */
+// Create new candidate (admin only)
 export const createCandidate = async (candidateData) => {
   return apiPost("/api/candidates/create.php", {
     electionId: candidateData.electionId,
     positionId: candidateData.positionId,
     name: candidateData.name,
-    bio: candidateData.bio,
-    manifesto: candidateData.manifesto,
-    photoUrl: candidateData.photoUrl,
-    videoUrl: candidateData.videoUrl,
+    bio: candidateData.bio || null,
+    manifesto: candidateData.manifesto || null,
+    photoUrl: candidateData.photoUrl || null,
+    videoUrl: candidateData.videoUrl || null,
   });
 };
 
-/**
- * Updates candidate information
- * Admin can edit any candidate details except votes
- */
+// Update candidate information (admin only)
 export const updateCandidate = async (candidateId, candidateData) => {
-  return apiPut(`/api/candidates/update.php?id=${candidateId}`, candidateData);
+  return apiPut(`/api/candidates/update.php?id=${candidateId}`, {
+    name: candidateData.name,
+    bio: candidateData.bio || null,
+    manifesto: candidateData.manifesto || null,
+    photoUrl: candidateData.photoUrl || null,
+    videoUrl: candidateData.videoUrl || null,
+  });
 };
 
-/**
- * Deletes a candidate from an election
- * Can only delete if no votes have been cast
- */
+// Delete candidate (admin only)
 export const deleteCandidate = async (candidateId) => {
   return apiDelete(`/api/candidates/delete.php?id=${candidateId}`);
 };
 
-/**
- * Gets audit log of all system activities
- * Tracks admin actions, vote submissions, election changes
- */
-export const getAuditLog = async (filters = {}) => {
-  const query = new URLSearchParams(filters).toString();
-  return apiGet(`/api/audit/log.php?${query}`);
-};
+// ============================================
+// Results & Reporting
+// ============================================
 
-/**
- * Gets system statistics and monitoring data
- * Shows voting participation, election status, etc.
- */
-export const getSystemStats = async () => {
-  return apiGet("/api/admin/stats.php");
-};
-
-/**
- * Gets detailed election report with all information
- * Useful for exporting election data
- */
-export const getElectionReport = async (electionId) => {
-  return apiGet(`/api/elections/report.php?id=${electionId}`);
-};
-
-/**
- * Exports election results as CSV or PDF
- * Admin feature for downloading results
- */
-export const exportElectionResults = async (electionId, format = "csv") => {
-  return apiGet(`/api/elections/export.php?id=${electionId}&format=${format}`);
+// Get election results with statistics
+export const getElectionResults = async (electionId) => {
+  return apiGet(`/api/votes/results.php?election_id=${electionId}`);
 };
