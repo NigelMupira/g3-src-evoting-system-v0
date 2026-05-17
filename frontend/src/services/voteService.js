@@ -1,62 +1,50 @@
 // ============================================
 // Vote Service
 // ============================================
-// API calls related to voting and election results
-// Handles vote submission and result retrieval
+// API calls for voting and election results
+// Handles vote submission, validation, and result retrieval
 
 import { apiGet, apiPost } from "./api";
 
-/**
- * Submits a voter's votes for an election
- * Votes are anonymous - voter ID is not stored with vote
- * Backend prevents double voting per election
- */
-export const submitVotes = async (votes) => {
+// ============================================
+// Submit Vote
+// ============================================
+// Cast vote in election for a specific position/candidate
+// Requires authentication, prevents double voting per position
+export const submitVote = async (electionId, positionId, candidateId) => {
   return apiPost("/api/votes/submit.php", {
-    votes: votes, // Array of { position_id, candidate_id }
-    electionId: votes.electionId,
+    electionId,
+    positionId,
+    candidateId,
   });
 };
 
-/**
- * Checks if user has already voted in an election
- * Used to prevent double voting
- */
-export const hasUserVoted = async (electionId) => {
-  return apiGet(`/api/votes/check.php?electionId=${electionId}`);
+// ============================================
+// Validate Voter
+// ============================================
+// Check if user can vote in a specific position
+// Validates election is active and user hasn't voted yet
+export const validateVoter = async (electionId, positionId) => {
+  return apiGet(`/api/votes/validate.php?election_id=${electionId}&position_id=${positionId}`);
 };
 
-/**
- * Fetches real-time results for an election
- * Shows vote counts per candidate
- * Admin can view at any time, voters only after election ends
- */
-export const getElectionResults = async (electionId) => {
-  return apiGet(`/api/votes/results.php?electionId=${electionId}`);
+// ============================================
+// Get Election Results
+// ============================================
+// Fetch vote counts by candidate for an election
+// Can optionally filter by specific position
+export const getElectionResults = async (electionId, positionId = null) => {
+  let url = `/api/votes/results.php?election_id=${electionId}`;
+  if (positionId) {
+    url += `&position_id=${positionId}`;
+  }
+  return apiGet(url);
 };
 
-/**
- * Fetches aggregated results for all positions in an election
- * Used for results dashboard visualization
- */
-export const getAggregatedResults = async (electionId) => {
-  return apiGet(`/api/votes/aggregated.php?electionId=${electionId}`);
-};
-
-/**
- * Fetches candidates for a specific election position
- * Shows all candidates and their details (bio, manifesto, photo, video)
- */
-export const getCandidatesForPosition = async (electionId, positionId) => {
-  return apiGet(
-    `/api/candidates/list.php?electionId=${electionId}&positionId=${positionId}`
-  );
-};
-
-/**
- * Fetches a single candidate's details
- * Includes bio, manifesto, photo, and video information
- */
-export const getCandidateDetails = async (candidateId) => {
-  return apiGet(`/api/candidates/get.php?id=${candidateId}`);
+// ============================================
+// Get Candidates for Election
+// ============================================
+// Fetch all candidates for an election grouped by position
+export const getCandidates = async (electionId) => {
+  return apiGet(`/api/candidates/list.php?election_id=${electionId}`);
 };
