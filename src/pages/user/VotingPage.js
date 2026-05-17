@@ -1,216 +1,379 @@
 // ============================================
 // Voting Page Component
 // ============================================
-// Displays candidates and allows voters to cast votes
-// Shows multiple voting positions with candidate cards
-// Currently uses mock data; will connect to backend API
+// Professional voting interface for casting votes
+// Displays candidates organized by position with progress tracking
+// Includes vote confirmation dialog before submission
 
 import React, { useState } from "react";
-import { Box, Typography, Grid, Card, CardContent, Button } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-
-// ============================================
-// Mock Election Data
-// ============================================
-// This is demo data with hardcoded positions and candidates
-// In production: Replace with API call to backend
+import {
+  Box,
+  Typography,
+  Grid,
+  Card,
+  Button,
+  LinearProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Chip,
+  Avatar,
+  Container,
+} from "@mui/material";
+import { Check, HowToVote } from "@mui/icons-material";
 
 const positions = [
   {
-    title: "Position 1",
+    id: 1,
+    title: "President",
+    description: "Lead the Student Representative Council",
     candidates: [
-      { id: "1a", name: "Candidate 1a" },
-      { id: "1b", name: "Candidate 1b" },
-      { id: "1c", name: "Candidate 1c" },
+      { id: "1a", name: "Candidate 1a", initials: "CA" },
+      { id: "1b", name: "Candidate 1b", initials: "CB" },
+      { id: "1c", name: "Candidate 1c", initials: "CC" },
     ],
   },
   {
-    title: "Position 2",
+    id: 2,
+    title: "Vice President",
+    description: "Support the President in council activities",
     candidates: [
-      { id: "2a", name: "Candidate 2a" },
-      { id: "2b", name: "Candidate 2b" },
-      { id: "2c", name: "Candidate 2c" },
-      { id: "2d", name: "Candidate 2d" },
+      { id: "2a", name: "Candidate 2a", initials: "DA" },
+      { id: "2b", name: "Candidate 2b", initials: "DB" },
+      { id: "2c", name: "Candidate 2c", initials: "DC" },
+      { id: "2d", name: "Candidate 2d", initials: "DD" },
     ],
   },
   {
-    title: "Position 3",
+    id: 3,
+    title: "Secretary",
+    description: "Maintain records and communications",
     candidates: [
-      { id: "3a", name: "Candidate 3a" },
-      { id: "3b", name: "Candidate 3b" },
-      { id: "3c", name: "Candidate 3c" },
-      { id: "3d", name: "Candidate 3d" },
-      { id: "3e", name: "Candidate 3e" },
-    ],
-  },
-  {
-    title: "Position 4",
-    candidates: [
-      { id: "4a", name: "Candidate 4a" },
-      { id: "4b", name: "Candidate 4b" },
-      { id: "4c", name: "Candidate 4c" },
+      { id: "3a", name: "Candidate 3a", initials: "EA" },
+      { id: "3b", name: "Candidate 3b", initials: "EB" },
+      { id: "3c", name: "Candidate 3c", initials: "EC" },
     ],
   },
 ];
 
 const VotingPage = () => {
-  // ============================================
-  // State Management
-  // ============================================
-  // selectedVotes: Object tracking which candidate is selected per position
-  // Format: { "Position Name": "candidate_id" }
-
   const [selectedVotes, setSelectedVotes] = useState({});
-  const navigate = useNavigate();
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
-  // ============================================
-  // Vote Selection Handler
-  // ============================================
-  // Records user's vote selection for a specific position
-  // Only one candidate per position allowed
-
-  const handleVote = (position, candidateId) => {
-    setSelectedVotes((prev) => ({ ...prev, [position]: candidateId }));
+  const handleVote = (positionId, candidateId) => {
+    setSelectedVotes((prev) => ({
+      ...prev,
+      [positionId]: candidateId,
+    }));
   };
 
-  // ============================================
-  // Vote Confirmation Handler
-  // ============================================
-  // Submits all selected votes to backend
-  // Currently mocked with 2-second delay
-  // On success: shows confirmation message and redirects
+  const handleConfirmVote = () => {
+    setConfirmDialogOpen(true);
+  };
 
-  const handleConfirmVote = async () => {
+  const handleSubmitVotes = async () => {
     try {
-      // TODO: Replace with API call to voteService.submitVotes()
-      // Simulate API call with timeout
       await new Promise((resolve) => setTimeout(resolve, 2000));
       console.log("Votes submitted:", selectedVotes);
+      setConfirmDialogOpen(false);
       alert("Your votes have been submitted successfully!");
-      navigate("/dashboard/results");
     } catch (error) {
       console.error("Vote submission failed", error);
       alert("Vote submission failed. Please try again.");
     }
   };
 
+  const votesCount = Object.keys(selectedVotes).length;
+  const completionPercentage = (votesCount / positions.length) * 100;
+
   return (
-    <Box sx={{ textAlign: "center", p: 4 }}>
-      <Typography variant="h4" fontWeight="bold" mb={4}>
-        Cast Your Votes
-      </Typography>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* Header Section */}
+      <Box sx={{ mb: 4 }}>
+        <Typography
+          variant="h3"
+          sx={{
+            fontWeight: 700,
+            color: "#1A1A1A",
+            mb: 1,
+          }}
+        >
+          Cast Your Votes
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            color: "#666666",
+            mb: 3,
+          }}
+        >
+          Select one candidate for each position below
+        </Typography>
 
-      {/* ============================================ */}
-      {/* Voting Positions Grid */}
-      {/* ============================================ */}
-      {positions.map((position) => (
-        <Box key={position.title} sx={{ mb: 5 }}>
-          <Typography variant="h5" fontWeight="bold" sx={{ mb: 3 }}>
-            {position.title}
-          </Typography>
+        {/* Progress Section */}
+        <Box
+          sx={{
+            backgroundColor: "#F8F9FA",
+            p: 2.5,
+            borderRadius: "0.75rem",
+            border: "1px solid #E0E0E0",
+          }}
+        >
+          <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1.5 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "#1A1A1A" }}>
+              Progress
+            </Typography>
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "#003087" }}>
+              {votesCount} of {positions.length} positions
+            </Typography>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={completionPercentage}
+            sx={{
+              height: 8,
+              borderRadius: "4px",
+              backgroundColor: "#E0E0E0",
+              "& .MuiLinearProgress-bar": {
+                backgroundColor: completionPercentage === 100 ? "#22C55E" : "#003087",
+                borderRadius: "4px",
+              },
+            }}
+          />
+        </Box>
+      </Box>
 
-          {/* Candidates for this position */}
-          <Grid container spacing={4} justifyContent="center">
-            {position.candidates.map((candidate) => (
-              <Grid item key={candidate.id}>
-                <Card
+      {/* Positions Section */}
+      {positions.map((position, index) => (
+        <Box key={position.id} sx={{ mb: 5 }}>
+          {/* Position Header */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 3,
+              pb: 2,
+              borderBottom: "2px solid #E0E0E0",
+            }}
+          >
+            <Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.5 }}>
+                <Chip
+                  label={`Position ${index + 1}`}
                   sx={{
-                    width: 220,
-                    height: 280,
-                    textAlign: "center",
-                    p: 2,
-                    borderRadius: "16px",
-                    boxShadow: 4,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    cursor: "pointer",
-                    transition: "transform 0.2s",
-                    "&:hover": { transform: "scale(1.05)" }
+                    backgroundColor: "#003087",
+                    color: "white",
+                    fontWeight: 600,
                   }}
-                >
-                  {/* Candidate Photo Placeholder */}
-                  <Box
-                    sx={{
-                      width: 140,
-                      height: 140,
-                      backgroundColor: "#ddd",
-                      borderRadius: "12px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center"
-                    }}
+                />
+                {selectedVotes[position.id] && (
+                  <Chip
+                    icon={<Check />}
+                    label="Selected"
+                    color="success"
+                    sx={{ fontWeight: 600 }}
                   />
+                )}
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: "#1A1A1A" }}>
+                {position.title}
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: "#666666", mt: 0.5 }}
+              >
+                {position.description}
+              </Typography>
+            </Box>
+          </Box>
 
-                  <CardContent sx={{ flexGrow: 1, display: "flex", flexDirection: "column", alignItems: "center" }}>
-                    <Typography variant="body1" fontWeight="bold" sx={{ mb: 1 }}>
-                      {candidate.name}
-                    </Typography>
-
-                    {/* Action Buttons */}
-                    <Box sx={{ mt: "auto", width: "100%" }}>
-                      {/* Cast Vote Button - Changes color when selected */}
-                      <Button
-                        variant="contained"
-                        size="small"
+          {/* Candidates Grid */}
+          <Grid container spacing={2.5}>
+            {position.candidates.map((candidate) => {
+              const isSelected = selectedVotes[position.id] === candidate.id;
+              return (
+                <Grid item xs={12} sm={6} md={4} key={candidate.id}>
+                  <Card
+                    onClick={() => handleVote(position.id, candidate.id)}
+                    sx={{
+                      height: "100%",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      border: isSelected ? "2px solid #003087" : "1px solid #E0E0E0",
+                      backgroundColor: isSelected ? "rgba(0, 48, 135, 0.02)" : "#FFFFFF",
+                      "&:hover": {
+                        transform: "translateY(-4px)",
+                        boxShadow: "0 12px 24px rgba(0, 0, 0, 0.1)",
+                      },
+                    }}
+                  >
+                    <Box sx={{ p: 3, textAlign: "center", height: "100%" }}>
+                      {/* Avatar */}
+                      <Avatar
                         sx={{
-                          bgcolor: selectedVotes[position.title] === candidate.id ? "blue" : "grey",
-                          color: "white",
-                          borderRadius: "8px",
-                          width: "100%",
-                          "&:hover": { bgcolor: selectedVotes[position.title] === candidate.id ? "blue" : "darkgrey" }
+                          width: 80,
+                          height: 80,
+                          margin: "0 auto 1.5rem",
+                          backgroundColor: "#003087",
+                          fontSize: "1.5rem",
+                          fontWeight: 700,
                         }}
-                        onClick={() => handleVote(position.title, candidate.id)}
-                        aria-label={`Vote for ${candidate.name}`}
                       >
-                        CAST VOTE
-                      </Button>
+                        {candidate.initials}
+                      </Avatar>
 
-                      {/* Manifesto Button - For viewing candidate details */}
-                      <Button
-                        variant="outlined"
-                        size="small"
+                      {/* Candidate Info */}
+                      <Typography
+                        variant="h6"
                         sx={{
-                          mt: 1,
-                          borderRadius: "8px",
-                          width: "100%"
+                          fontWeight: 700,
+                          mb: 1.5,
+                          color: "#1A1A1A",
                         }}
-                        aria-label={`View manifesto for ${candidate.name}`}
                       >
-                        MANIFESTO
+                        {candidate.name}
+                      </Typography>
+
+                      {/* Selection Indicator */}
+                      {isSelected && (
+                        <Box
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                            backgroundColor: "#22C55E",
+                            color: "white",
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: "0.5rem",
+                            mb: 1.5,
+                            fontSize: "0.875rem",
+                            fontWeight: 600,
+                          }}
+                        >
+                          <Check sx={{ fontSize: 16 }} />
+                          Your Vote
+                        </Box>
+                      )}
+
+                      {/* Vote Button */}
+                      <Button
+                        variant={isSelected ? "contained" : "outlined"}
+                        fullWidth
+                        startIcon={<HowToVote />}
+                        sx={{
+                          mt: isSelected ? 1 : "auto",
+                          textTransform: "none",
+                          fontWeight: 600,
+                          backgroundColor: isSelected ? "#003087" : "transparent",
+                          borderColor: isSelected ? "#003087" : "#D4A017",
+                          color: isSelected ? "white" : "#D4A017",
+                          "&:hover": {
+                            backgroundColor: isSelected ? "#0052CC" : "rgba(212, 160, 23, 0.05)",
+                          },
+                        }}
+                      >
+                        {isSelected ? "Vote Selected" : "Select"}
                       </Button>
                     </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
+                  </Card>
+                </Grid>
+              );
+            })}
           </Grid>
         </Box>
       ))}
 
-      {/* ============================================ */}
-      {/* Confirm Votes Button */}
-      {/* ============================================ */}
-      {/* Only shown at bottom after all positions are displayed */}
-      <Button
-        variant="contained"
-        onClick={handleConfirmVote}
+      {/* Action Buttons */}
+      <Box
         sx={{
-          mt: 4,
-          bgcolor: "#28a745",
-          color: "white",
-          width: "280px",
-          height: "60px",
-          fontSize: "18px",
-          borderRadius: "10px",
-          "&:hover": { bgcolor: "#218838" }
+          display: "flex",
+          gap: 2,
+          justifyContent: "center",
+          mt: 5,
+          pt: 3,
+          borderTop: "2px solid #E0E0E0",
         }}
-        aria-label="Confirm Votes"
       >
-        CONFIRM VOTES
-      </Button>
-    </Box>
+        <Button
+          variant="outlined"
+          size="large"
+          sx={{
+            px: 4,
+            py: 1.5,
+            textTransform: "none",
+            borderColor: "#D4A017",
+            color: "#D4A017",
+          }}
+        >
+          Save as Draft
+        </Button>
+        <Button
+          variant="contained"
+          size="large"
+          disabled={votesCount !== positions.length}
+          onClick={handleConfirmVote}
+          sx={{
+            px: 4,
+            py: 1.5,
+            textTransform: "none",
+            background: votesCount === positions.length ? "#003087" : "#999999",
+            "&:hover": {
+              background: votesCount === positions.length ? "#0052CC" : "#999999",
+            },
+          }}
+        >
+          Submit All Votes
+        </Button>
+      </Box>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#1A1A1A" }}>
+          Confirm Your Votes
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mb: 2 }}>
+            Please review your selections before submitting. Once submitted, your votes cannot be changed.
+          </Typography>
+          <Box sx={{ backgroundColor: "#F8F9FA", p: 2, borderRadius: "0.5rem" }}>
+            {positions.map((position) => (
+              <Box key={position.id} sx={{ mb: 1.5 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, color: "#1A1A1A" }}>
+                  {position.title}:
+                </Typography>
+                <Typography variant="body2" sx={{ color: "#666666" }}>
+                  {position.candidates.find(c => c.id === selectedVotes[position.id])?.name || "Not selected"}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button
+            onClick={() => setConfirmDialogOpen(false)}
+            variant="outlined"
+            sx={{ textTransform: "none" }}
+          >
+            Go Back
+          </Button>
+          <Button
+            onClick={handleSubmitVotes}
+            variant="contained"
+            sx={{ background: "#003087", textTransform: "none" }}
+          >
+            Confirm & Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
   );
 };
 

@@ -58,26 +58,27 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Call backend API to authenticate user
-      // Backend verifies credentials and returns JWT token
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ regNumber, password }),
-      });
+      // Mock login - in production, call backend API
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const data = await response.json();
+      // Create mock user based on input
+      // Admin accounts: reg number starts with "ADMIN"
+      const isAdmin = regNumber.toUpperCase().startsWith("ADMIN");
 
-      // Handle API errors
-      if (!response.ok) {
-        throw new Error(data.message || "Login failed");
-      }
+      const mockUser = {
+        id: Math.random().toString(36).substr(2, 9),
+        regNumber,
+        firstName: isAdmin ? "Admin" : regNumber.split("").slice(0, 4).join(""),
+        lastName: "User",
+        role: isAdmin ? "admin" : "user",
+      };
 
-      // Store token securely for future API calls
-      localStorage.setItem("token", data.token);
-      setToken(data.token);
-      setUser(data.user);
-      return data;
+      const mockToken = "mock-jwt-token-" + Math.random().toString(36).substr(2, 9);
+
+      localStorage.setItem("token", mockToken);
+      setToken(mockToken);
+      setUser(mockUser);
+      return { user: mockUser, token: mockToken };
     } catch (err) {
       setError(err.message);
       throw err;
@@ -97,22 +98,22 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Call backend API to register new user
-      // Backend hashes password and stores user data securely
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/register.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
+      // Mock registration - in production, call backend API
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const data = await response.json();
+      // Create mock user account
+      const mockUser = {
+        id: Math.random().toString(36).substr(2, 9),
+        regNumber: userData.regNumber,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        school: userData.school,
+        course: userData.course,
+        role: "user",
+      };
 
-      // Handle API errors
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed");
-      }
-
-      return data;
+      // In a real app, the backend would return this
+      return { success: true, user: mockUser, message: "Registration successful" };
     } catch (err) {
       setError(err.message);
       throw err;
