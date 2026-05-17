@@ -6,6 +6,7 @@
 // Uses React Context API to avoid prop drilling
 
 import React, { createContext, useContext, useState, useCallback } from "react";
+import { loginUser, registerUser, logoutUser } from "../services/authService";
 
 // ============================================
 // Create Context
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }) => {
   // ============================================
   // Login Method
   // ============================================
-  // Authenticates user with registration number and password
+  // Calls backend API to authenticate user with registration number and password
   // On success: stores token in localStorage and updates user state
   // On error: sets error message that can be displayed to user
 
@@ -58,29 +59,15 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Mock login - in production, call backend API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await loginUser(regNumber, password);
 
-      // Create mock user based on input
-      // Admin accounts: reg number starts with "ADMIN"
-      const isAdmin = regNumber.toUpperCase().startsWith("ADMIN");
-
-      const mockUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        regNumber,
-        firstName: isAdmin ? "Admin" : regNumber.split("").slice(0, 4).join(""),
-        lastName: "User",
-        role: isAdmin ? "admin" : "user",
-      };
-
-      const mockToken = "mock-jwt-token-" + Math.random().toString(36).substr(2, 9);
-
-      localStorage.setItem("token", mockToken);
-      setToken(mockToken);
-      setUser(mockUser);
-      return { user: mockUser, token: mockToken };
+      // Token is stored by authService, set in context
+      setToken(response.token);
+      setUser(response.user);
+      return { user: response.user, token: response.token };
     } catch (err) {
-      setError(err.message);
+      const errorMessage = err.response?.data?.error || err.message || "Login failed";
+      setError(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);
@@ -90,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   // ============================================
   // Register Method
   // ============================================
-  // Creates new user account with provided information
+  // Calls backend API to create new user account with provided information
   // Returns result but does NOT automatically log user in
   // User must navigate to login page after successful registration
 
@@ -98,24 +85,19 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      // Mock registration - in production, call backend API
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await registerUser(
+        userData.regNumber,
+        userData.password,
+        userData.firstName,
+        userData.lastName,
+        userData.school,
+        userData.course
+      );
 
-      // Create mock user account
-      const mockUser = {
-        id: Math.random().toString(36).substr(2, 9),
-        regNumber: userData.regNumber,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        school: userData.school,
-        course: userData.course,
-        role: "user",
-      };
-
-      // In a real app, the backend would return this
-      return { success: true, user: mockUser, message: "Registration successful" };
+      return { success: true, user: response.data, message: "Registration successful" };
     } catch (err) {
-      setError(err.message);
+      const errorMessage = err.response?.data?.error || err.message || "Registration failed";
+      setError(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);
@@ -125,14 +107,22 @@ export const AuthProvider = ({ children }) => {
   // ============================================
   // Logout Method
   // ============================================
-  // Clears all authentication data from local storage and state
+  // Calls backend API to invalidate session and clears local authentication data
   // User will be redirected to login page by ProtectedRoute component
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
-    setError(null);
+  const logout = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await logoutUser();
+    } catch (err) {
+      console.warn("Logout API call failed, clearing local session anyway");
+    } finally {
+      localStorage.removeItem("token");
+      setToken(null);
+      setUser(null);
+      setError(null);
+      setIsLoading(false);
+    }
   }, []);
 
   // ============================================
