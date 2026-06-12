@@ -15,14 +15,14 @@ class User {
     }
 
     // Create new user account with registration number and credentials
-    public function create($regNumber, $firstName, $lastName, $passwordHash, $school = null, $course = null) {
+    public function create($regNumber, $firstName, $lastName, $passwordHash, $school = null, $course = null, $role = 'user') {
         try {
             $stmt = $this->pdo->prepare("
                 INSERT INTO users (reg_number, first_name, last_name, password_hash, school, course, role, is_active, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, 'user', TRUE, CURRENT_TIMESTAMP)
+                VALUES (?, ?, ?, ?, ?, ?, ?, TRUE, CURRENT_TIMESTAMP)
             ");
 
-            return $stmt->execute([$regNumber, $firstName, $lastName, $passwordHash, $school, $course]);
+            return $stmt->execute([$regNumber, $firstName, $lastName, $passwordHash, $school, $course, $role]);
         } catch (\PDOException $e) {
             throw new \Exception("Error creating user: " . $e->getMessage());
         }
