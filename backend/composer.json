@@ -10,5 +10,18 @@
     "psr-4": {
       "App\\": "."
     }
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true
+    }
+  },
+  "extra": {
+    "composer-audit": {
+      "abandoned": [],
+      "vulnerabilities": [
+        "PKSA-y2cr-5h3j-g3ys"
+      ]
+    }
   }
 }
