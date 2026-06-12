@@ -14,14 +14,11 @@
   "config": {
     "allow-plugins": {
       "composer/installers": true
-    }
-  },
-  "extra": {
-    "composer-audit": {
-      "abandoned": [],
-      "vulnerabilities": [
-        "PKSA-y2cr-5h3j-g3ys"
-      ]
+    },
+    "audit": {
+      "ignore": {
+        "PKSA-y2cr-5h3j-g3ys": "No patched version available yet — all versions v6.8.0-v6.11.1 are affected"
+      }
     }
   }
 }
