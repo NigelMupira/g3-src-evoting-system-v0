@@ -1,15 +1,21 @@
 // ============================================
 // API Client / HTTP Service
 // ============================================
-// Centralized API client for all HTTP requests
-// Handles authentication, error handling, and request/response interceptors
-// Currently uses fetch; can be upgraded to axios in the future
+// Centralized HTTP client used by all service files (authService, electionService, etc.)
+// All API calls in the app must go through these helpers — never use fetch() directly elsewhere.
+// Uses the native Fetch API. Can be upgraded to axios in the future if needed.
 
 /**
- * Base API configuration
- * Gets API URL from environment variable
+ * Base API URL — where the PHP backend is running.
+ *
+ * Priority order for environment variable:
+ *   1. VITE_API_URL  (Vite build system — used after migrating from Create React App)
+ *   2. REACT_APP_API_URL (legacy CRA env variable — kept for backwards compatibility)
+ *   3. http://localhost:8000 (hardcoded fallback for local development)
+ *
+ * For production on Vercel, set VITE_API_URL to your Railway backend URL.
  */
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 /**
  * Constructs full URL for API endpoints

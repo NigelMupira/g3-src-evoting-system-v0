@@ -1,4 +1,5 @@
 <?php
+
 // ============================================
 // User Registration Endpoint
 // ============================================
@@ -13,12 +14,6 @@ require_once __DIR__ . '/../../models/User.php';
 use App\User;
 
 try {
-    // Handle CORS preflight requests
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(204);
-        exit;
-    }
-    
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new \Exception('Only POST requests allowed');
     }

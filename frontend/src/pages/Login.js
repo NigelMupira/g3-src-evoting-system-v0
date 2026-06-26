@@ -25,7 +25,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "../context/AuthContext";
 
 const Login = () => {
@@ -83,7 +83,22 @@ const Login = () => {
 
     const result = await login(formData.regNumber, formData.password);
     if (result) {
-      const isAdmin = formData.regNumber.toUpperCase().startsWith("ADMIN");
+      // ============================================
+      // Role-Based Redirect
+      // ============================================
+      // After a successful login the backend returns the user's role from the database.
+      // We check result.user.role to determine where to send them:
+      //   - role === 'admin'  -> /admin (Admin Dashboard)
+      //   - role === 'user'   -> /dashboard (Voter Dashboard)
+      //
+      // Admins are NOT registered on the platform by themselves.
+      // They are added directly to the database by a superuser/initial admin,
+      // then log in via this same login page. The redirect happens automatically
+      // once the backend confirms their role.
+      //
+      // If the user was trying to access a protected page before logging in,
+      // location.state.from will contain that path and we redirect there instead.
+      const isAdmin = result.user?.role === "admin";
       const defaultPath = isAdmin ? "/admin" : "/dashboard";
       const from = location.state?.from?.pathname || defaultPath;
       navigate(from);

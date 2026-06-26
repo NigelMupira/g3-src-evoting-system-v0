@@ -85,14 +85,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await registerUser(
-        userData.regNumber,
-        userData.password,
-        userData.firstName,
-        userData.lastName,
-        userData.school,
-        userData.course
-      );
+      const response = await registerUser(userData);
 
       return { success: true, user: response.data, message: "Registration successful" };
     } catch (err) {

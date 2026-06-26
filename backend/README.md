@@ -1,113 +1,199 @@
 # Backend API
 
-This folder contains the PHP backend for the E-Voting System.
+PHP backend for the SRC E-Voting System. Exposes a RESTful JSON API consumed by the React frontend.
 
-## Structure
+## Architecture
 
-- **api/** - API endpoints organized by resource (auth, elections, candidates, votes)
-- **config/** - Configuration files (database connection, constants)
-- **models/** - PHP classes for database models (User, Election, Candidate, Vote)
-- **middleware/** - Middleware functions (authentication, validation, error handling)
+All HTTP requests are funnelled through a single **front controller** (`index.php`) which:
+
+1. Sets global CORS headers (no per-file `cors.php` boilerplate needed)
+2. Handles OPTIONS preflight requests
+3. Dynamically routes the request to the matching PHP endpoint file
+
+**Start the server:**
+
+```bash
+# Always use index.php as the router entry point
+php -S localhost:8000 index.php
+```
+
+## Directory Structure
+
+```
+backend/
+├── index.php             # Front controller: global CORS + dynamic router
+├── .env                  # Environment variables (DB credentials, JWT secret)
+├── .env.example          # Template for setting up .env
+├── composer.json         # PHP dependencies
+├── api/
+│   ├── auth/
+│   │   ├── login.php     # POST - authenticate user, returns JWT token
+│   │   ├── register.php  # POST - create new voter account
+│   │   └── logout.php    # POST - validate and confirm logout
+│   ├── elections/
+│   │   ├── list.php      # GET  - list all/active elections
+│   │   ├── get.php       # GET  - get single election by ID
+│   │   ├── create.php    # POST - create election (admin only)
+│   │   ├── update.php    # PUT  - update election (admin only)
+│   │   └── delete.php    # DELETE - delete election (admin only)
+│   ├── candidates/
+│   │   ├── list.php      # GET  - list candidates for an election
+│   │   ├── create.php    # POST - add candidate (admin only)
+│   │   ├── update.php    # PUT  - update candidate (admin only)
+│   │   └── delete.php    # DELETE - delete candidate (admin only)
+│   ├── votes/
+│   │   ├── submit.php    # POST - cast vote (auth required)
+│   │   ├── validate.php  # GET  - check if user can vote in position (auth required)
+│   │   └── results.php   # GET  - get vote counts/statistics for election
+│   └── middleware/
+│       ├── JWTAuth.php   # JWT token generation, validation, and header parsing
+│       └── AdminAuth.php # Role-based auth: requireAuth() and requireAdmin()
+├── config/
+│   └── database.php      # PDO MySQL connection using .env variables
+└── models/
+    ├── User.php           # User DB operations (create, find, exists check)
+    ├── Election.php       # Election DB operations (CRUD + toggle active)
+    ├── Candidate.php      # Candidate DB operations (CRUD)
+    └── Vote.php           # Vote submission, duplicate check, results queries
+```
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and configure:
-   ```bash
-   DB_HOST=localhost
-   DB_USER=root
-   DB_PASS=
-   DB_NAME=evoting_system
-   JWT_SECRET=your_very_secret_key_change_this
-   ```
+### Prerequisites
 
-2. Install dependencies:
-   ```bash
-   composer install
-   ```
+- PHP 8.0+ with `pdo_mysql` extension enabled
+  - On Windows: edit `php.ini`, ensure `extension_dir` is absolute and `extension=pdo_mysql` is uncommented
+- MySQL 5.7+ or 8.0+
+- Composer
 
-3. Create MySQL database:
-   ```bash
-   mysql -u root -p < ../database/schemas/schema.sql
-   ```
+### Installation
 
-4. Start PHP server:
-   ```bash
-   php -S localhost:8000
-   ```
+```bash
+# Install PHP dependencies (firebase/php-jwt, vlucas/phpdotenv)
+composer install
+
+# Copy environment template and configure
+cp .env.example .env
+# Edit .env with your database credentials
+```
+
+### Environment Variables (`.env`)
+
+```env
+DB_HOST=localhost
+DB_USER=evoting
+DB_PASS=your_secure_password
+DB_NAME=evoting_system
+JWT_SECRET=your_very_long_random_secret
+JWT_EXPIRY=900           # Seconds until token expires (900 = 15 minutes)
+FRONTEND_URL=http://localhost:3000
+```
+
+### Database Setup
+
+```bash
+# Create database and import schema
+mysql -u root -p evoting_system < ../database/schemas/schema.sql
+```
+
+### Start Server
+
+```bash
+php -S localhost:8000 index.php
+```
+
+Backend API will be available at `http://localhost:8000`
+
+---
 
 ## API Endpoints
 
-### Authentication (Implemented ✅)
-- `POST /api/auth/register.php` - Register new user
-  - Body: `{ regNumber, password, firstName, lastName, school?, course? }`
-  - Returns: User data
-  
-- `POST /api/auth/login.php` - Login user
-  - Body: `{ regNumber, password }`
-  - Returns: JWT token + user data
-  
-- `POST /api/auth/logout.php` - Logout user
-  - Headers: `Authorization: Bearer {token}`
-  - Returns: Success message
+### Authentication
 
-### Elections (Implemented ✅)
-- `GET /api/elections/list.php?active=true` - Get all or active elections
-  - Returns: Array of elections
-  
-- `GET /api/elections/get.php?id={id}` - Get election details
-  - Returns: Election data
-  
-- `POST /api/elections/create.php` - Create election (admin only)
-  - Headers: `Authorization: Bearer {token}`
-  - Body: `{ name, description?, startDate, endDate }`
-  - Returns: Election ID
-  
-- `PUT /api/elections/update.php?id={id}` - Update election (admin only)
-  - Headers: `Authorization: Bearer {token}`
-  - Body: `{ name, description?, startDate, endDate }`
-  - Returns: Success message
-  
-- `DELETE /api/elections/delete.php?id={id}` - Delete election (admin only)
-  - Headers: `Authorization: Bearer {token}`
-  - Returns: Success message
+| Method | Endpoint                 | Auth       | Description                      |
+| ------ | ------------------------ | ---------- | -------------------------------- |
+| POST   | `/api/auth/register.php` | None       | Register new voter               |
+| POST   | `/api/auth/login.php`    | None       | Login, returns JWT + user object |
+| POST   | `/api/auth/logout.php`   | Bearer JWT | Confirm logout                   |
 
-### Candidates (Implemented ✅)
-- `GET /api/candidates/list.php?election_id={id}` - Get candidates for election
-  - Returns: Array of candidates with position info
-  
-- `POST /api/candidates/create.php` - Add candidate (admin only)
-  - Headers: `Authorization: Bearer {token}`
-  - Body: `{ electionId, positionId, name, bio?, manifesto?, photoUrl?, videoUrl? }`
-  - Returns: Candidate ID
-  
-- `PUT /api/candidates/update.php?id={id}` - Update candidate (admin only)
-  - Headers: `Authorization: Bearer {token}`
-  - Body: `{ name, bio?, manifesto?, photoUrl?, videoUrl? }`
-  - Returns: Success message
-  
-- `DELETE /api/candidates/delete.php?id={id}` - Delete candidate (admin only)
-  - Headers: `Authorization: Bearer {token}`
-  - Returns: Success message
+**Register body:**
 
-### Voting (Implemented ✅)
-- `POST /api/votes/submit.php` - Submit vote (requires authentication)
-  - Headers: `Authorization: Bearer {token}`
-  - Body: `{ electionId, positionId, candidateId }`
-  - Returns: Success message
-  - Note: Prevents double voting per position
-  
-- `GET /api/votes/results.php?election_id={id}&position_id={id}?` - Get election results
-  - Returns: Vote counts by candidate + stats
-  
-- `GET /api/votes/validate.php?election_id={id}&position_id={id}` - Check if can vote (requires authentication)
-  - Headers: `Authorization: Bearer {token}`
-  - Returns: Can vote status + reason if unable
+```json
+{
+  "regNumber": "H230001V",
+  "password": "Pass@123",
+  "firstName": "John",
+  "lastName": "Doe",
+  "school": "Engineering",
+  "course": "Software Engineering"
+}
+```
 
-## Security
+**Login response:**
 
-- All passwords hashed with bcrypt
-- JWT tokens for authentication
-- Voter IDs hashed in votes table (anonymized)
-- Input validation and sanitization
-- CORS protection
-- Rate limiting on auth endpoints
+```json
+{
+  "success": true,
+  "token": "eyJ...",
+  "user": {
+    "id": 1,
+    "regNumber": "H230001V",
+    "role": "user",
+    "firstName": "John"
+  }
+}
+```
+
+### Elections
+
+| Method | Endpoint                              | Auth      | Description               |
+| ------ | ------------------------------------- | --------- | ------------------------- |
+| GET    | `/api/elections/list.php`             | None      | Get all elections         |
+| GET    | `/api/elections/list.php?active=true` | None      | Get active elections only |
+| GET    | `/api/elections/get.php?id={id}`      | None      | Get single election       |
+| POST   | `/api/elections/create.php`           | Admin JWT | Create election           |
+| PUT    | `/api/elections/update.php?id={id}`   | Admin JWT | Update election           |
+| DELETE | `/api/elections/delete.php?id={id}`   | Admin JWT | Delete election           |
+
+### Candidates
+
+| Method | Endpoint                                    | Auth      | Description                  |
+| ------ | ------------------------------------------- | --------- | ---------------------------- |
+| GET    | `/api/candidates/list.php?election_id={id}` | None      | List candidates for election |
+| POST   | `/api/candidates/create.php`                | Admin JWT | Add candidate                |
+| PUT    | `/api/candidates/update.php?id={id}`        | Admin JWT | Update candidate             |
+| DELETE | `/api/candidates/delete.php?id={id}`        | Admin JWT | Delete candidate             |
+
+### Votes
+
+| Method | Endpoint                                                    | Auth       | Description                  |
+| ------ | ----------------------------------------------------------- | ---------- | ---------------------------- |
+| POST   | `/api/votes/submit.php`                                     | Bearer JWT | Cast vote (one per position) |
+| GET    | `/api/votes/validate.php?election_id={id}&position_id={id}` | Bearer JWT | Check if user can vote       |
+| GET    | `/api/votes/results.php?election_id={id}`                   | None       | Get vote counts              |
+
+---
+
+## Admin Accounts
+
+Admins are **not** created through the registration endpoint.
+They are inserted directly into the `users` table with `role = 'admin'`:
+
+```sql
+INSERT INTO users (reg_number, first_name, last_name, password_hash, role)
+VALUES ('ADMIN001', 'Admin', 'User', '$2y$10$...bcrypt_hash...', 'admin');
+```
+
+The login endpoint returns the user's role, and the frontend automatically redirects admins to `/admin`.
+
+---
+
+## Security Notes
+
+- All passwords hashed with **bcrypt** (`password_hash($password, PASSWORD_BCRYPT)`)
+- JWT signed with HS256 using the `JWT_SECRET` from `.env`
+- Voter IDs are hashed before storing (`SHA-256(regNumber + positionId)`) — not reversible
+- CORS restricted to known origins in `index.php` (not open `*`)
+- Admin endpoints verify `role === 'admin'` server-side via `AdminAuth::requireAdmin()`
+
+**Last Updated**: 2026-06-26

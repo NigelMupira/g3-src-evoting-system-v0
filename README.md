@@ -20,28 +20,35 @@ A secure, web-based election management platform for Student Representative Coun
 ## ✨ Features
 
 ### For Voters
-- **User Registration**: Create account with validation (registration number format, password strength)
+
+- **User Registration**: Create account with validation (registration number, password strength)
 - **Secure Login**: JWT-based authentication with "Remember Me" option
 - **Vote Casting**: Select candidates per position in active elections
 - **Vote Privacy**: Votes are anonymous and cannot be traced back to voters
-- **Results Viewing**: View real-time election results after voting ends
+- **Results Viewing**: View real-time election results
 - **Candidate Info**: Access candidate profiles with bios and manifestos
 - **Logout**: Secure session termination
 
 ### For Administrators
+
 - **Election Management**: Create, edit, activate, and close elections
 - **Candidate Management**: Add, edit, and manage candidates with media
 - **Real-time Monitoring**: View live voting statistics and participation rates
 - **Results Analytics**: Generate reports and visualize results with charts
 - **Audit Logging**: Track all system activities and admin actions
-- **User Management**: View registered voters and participation history (anonymized)
+
+> **Note on Admin Accounts**: Admins are **not** registered through the public registration page.
+> They are added directly to the `users` table in the database by a superuser/initial admin
+> with `role = 'admin'`. They then log in via the same login page as voters, and the system
+> automatically detects their role from the database and redirects them to `/admin`.
 
 ### Security Features
+
 - **Password Security**: Passwords hashed with bcrypt on backend
-- **Authentication**: JWT tokens with 15-minute expiry for access tokens
-- **Vote Privacy**: Voter IDs hashed; votes are anonymous
-- **Input Validation**: Client and server-side validation of all inputs
-- **Double Voting Prevention**: Backend prevents voting multiple times
+- **Authentication**: JWT tokens with 15-minute expiry
+- **Vote Privacy**: Voter IDs hashed (SHA-256); votes are anonymous
+- **Input Validation**: Client and server-side validation
+- **Double Voting Prevention**: Backend enforces one vote per position per voter
 - **HTTPS**: Enforced in production environments
 - **Audit Trail**: All admin actions logged for accountability
 
@@ -50,101 +57,98 @@ A secure, web-based election management platform for Student Representative Coun
 ## 🛠️ Technology Stack
 
 ### Frontend
+
 - **React** `^19.0.0` - UI framework
+- **Vite** `^5.4.11` - Build tool (replaced Create React App for React 19 compatibility)
 - **React Router DOM** `^7.3.0` - Client-side routing
 - **Material-UI (MUI)** `^6.4.6` - Component library & icons
-- **React Helmet** `^6.1.0` - Document head management (SEO)
+- **React Helmet Async** `^3.0.0` - Document head management (SEO)
 
-### Backend ✅ (Implemented)
-- **PHP** 8.0+ - Server-side logic with RESTful API
-- **MySQL** 8.0+ - 6-table database with relationships
-- **JWT** - JSON Web Tokens for authentication (15-min expiry)
-- **bcrypt** - Password hashing for security
+### Backend
 
-### Hosting
+- **PHP** `8.0+` - Server-side logic with RESTful API
+- **MySQL** `8.0+` - 6-table relational database
+- **firebase/php-jwt** `^6.8` - JWT token generation/validation
+- **vlucas/phpdotenv** `^5.5` - `.env` file loading
+
+### Hosting (Target)
+
 - **Frontend**: Vercel (free tier) - React app deployment
-- **Backend + Database**: Railway.app (free tier with $5/month credits) - PHP + MySQL combined
-- **Why this stack**: Vercel is frontend-only; Railway provides both backend server and database in one platform, both free to start
-
-**Alternative Free Options**:
-- Database: PlanetScale (free MySQL) + Backend: Render.com (free tier)
-- Full Stack: Supabase (free PostgreSQL - would need schema conversion)
-
-### Development Tools
-- **Node.js** 16+ & npm/yarn - Package management
-- **Jest & React Testing Library** - Testing frameworks
+- **Backend + Database**: Railway.app (free tier, $5/month credit) - PHP + MySQL
 
 ---
 
 ## 📁 Project Structure
 
 ```
-evoting-system/
-├── frontend/                  # React application
+g3-src-evoting-system/
+├── frontend/                  # React + Vite application
 │   ├── src/
-│   │   ├── pages/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── services/
-│   │   ├── utils/
-│   │   ├── theme/
-│   │   ├── App.js
-│   │   └── index.js
-│   ├── public/
-│   ├── package.json
-│   └── README.md
+│   │   ├── pages/             # Page components (Home, Login, Register, dashboards)
+│   │   ├── components/        # Reusable components (Header, Sidebar, ProtectedRoute)
+│   │   ├── context/           # Global state (AuthContext)
+│   │   ├── services/          # API service layer (api.js, authService.js, etc.)
+│   │   ├── utils/             # Helpers, constants, validators
+│   │   ├── theme/             # Material-UI custom theme (school colors)
+│   │   ├── App.js             # Root app with routing
+│   │   └── index.js           # App entry point
+│   ├── public/                # Static assets
+│   ├── index.html             # Vite HTML entry (root of frontend/)
+│   ├── vite.config.js         # Vite configuration
+│   └── package.json
 ├── backend/                   # PHP API
 │   ├── api/
-│   │   ├── auth/
-│   │   ├── elections/
-│   │   ├── candidates/
-│   │   ├── votes/
-│   │   └── middleware/
-│   ├── config/
-│   ├── models/
-│   ├── index.php
-│   ├── .env.example
-│   └── README.md
-├── database/                  # MySQL schemas & migrations
-│   ├── schemas/
-│   ├── migrations/
-│   ├── seeds/
-│   └── README.md
+│   │   ├── auth/              # login.php, register.php, logout.php
+│   │   ├── elections/         # CRUD endpoints for elections
+│   │   ├── candidates/        # CRUD endpoints for candidates
+│   │   ├── votes/             # submit.php, results.php, validate.php
+│   │   └── middleware/        # JWTAuth.php, AdminAuth.php
+│   ├── config/                # database.php (PDO connection)
+│   ├── models/                # User.php, Election.php, Candidate.php, Vote.php
+│   ├── index.php              # Front controller (global CORS + request routing)
+│   └── .env                   # Database & JWT secrets (not in git)
+├── database/
+│   ├── schemas/schema.sql     # MySQL table definitions
+│   ├── seeds/                 # Sample data scripts
+│   └── setup.bat / setup.sh   # One-command database setup scripts
 └── README.md                  # This file
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
-- Node.js 16+ and npm/yarn
-- PHP 8.0+
-- MySQL 5.7+
-- Modern web browser
 
-### Frontend Setup
+- Node.js 18+ and npm
+- PHP 8.0+ with `pdo_mysql` extension enabled
+- MySQL 5.7+
+
+### 1. Database Setup
+
+```bash
+# Create database and import schema
+mysql -u root -p < database/schemas/schema.sql
+
+# Or use the setup script (Windows):
+database\setup.bat
+```
+
+### 2. Backend Setup
+
+```bash
+cd backend
+# Ensure .env is configured (copy .env.example if needed)
+# Start PHP server — index.php acts as the front controller
+php -S localhost:8000 index.php
+```
+
+### 3. Frontend Setup
+
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local
-npm start
-```
-Frontend runs on `http://localhost:3000`
-
-### Backend Setup
-```bash
-cd backend
-cp .env.example .env
-# Configure .env with database credentials
-# php -S localhost:8000
-```
-Backend API runs on `http://localhost:8000`
-
-### Database Setup
-```bash
-# Create MySQL database
-mysql -u root -p < database/schemas/schema.sql
+npm run start     # Starts Vite dev server on http://localhost:3000
 ```
 
 ---
@@ -152,183 +156,187 @@ mysql -u root -p < database/schemas/schema.sql
 ## 🏗️ Architecture
 
 ### Authentication Flow
+
 ```
-User Logs In → Frontend validates input → API call to backend
-Backend validates credentials → Returns JWT token → Token stored in memory
-Token included in all subsequent API requests → Auto-refresh on 401
+User submits login form
+  → authService.js sends POST /api/auth/login.php
+  → Backend validates credentials, returns JWT token + user (id, role, name)
+  → AuthContext stores token in localStorage, user object in state
+  → Login.js checks user.role:
+      role === 'admin' → navigate('/admin')
+      role === 'user'  → navigate('/dashboard')
 ```
 
 ### Vote Submission Flow
+
 ```
-Voter selects candidates → Submits votes → Backend receives votes with JWT
-Backend verifies voter hasn't voted → Encrypts vote → Stores with hashed voter ID
-Vote is anonymous → Results updated in real-time
+Voter selects candidate and submits
+  → voteService.js sends POST /api/votes/submit.php with JWT
+  → Backend verifies token, checks election is active
+  → Voter ID hashed: SHA-256(regNumber + positionId) for anonymity
+  → Checks UNIQUE constraint on (voter_id_hash, position_id, election_id)
+  → Stores vote — voter identity is never stored directly
 ```
 
-### Role-Based Access
+### CORS & Routing (Backend)
+
 ```
-Public Routes:
-  / (Home) | /login | /register
+All requests → backend/index.php (front controller)
+  → Sets global CORS headers
+  → Handles OPTIONS preflight
+  → Routes /api/auth/login.php → backend/api/auth/login.php
+  → Routes /api/elections/list.php → backend/api/elections/list.php
+  → etc.
+```
 
-Protected Voter Routes:
-  /dashboard | /voting | /results
+### Role-Based Access Control
 
-Protected Admin Routes:
-  /admin | /admin/elections | /admin/candidates | /admin/results
+```
+Public Routes:  /  |  /login  |  /register
+
+Voter Routes (JWT required):
+  /dashboard    → voter home
+  /voting       → cast votes
+  /results      → view results
+
+Admin Routes (JWT + role=admin required):
+  /admin        → admin dashboard
+  /admin/elections  → manage elections
+  /admin/candidates → manage candidates
+  /admin/results    → view vote analytics
 ```
 
 ---
 
 ## 📅 Development Phases
 
-1. ✅ **Phase 1**: Fix immediate frontend issues
-   - Resolved merge conflicts, created AuthContext, fixed security issues
+| Phase   | Status         | Description                                                    |
+| ------- | -------------- | -------------------------------------------------------------- |
+| Phase 1 | ✅ Complete    | Frontend foundation — AuthContext, routing, security fixes     |
+| Phase 2 | ✅ Complete    | Backend — PHP API, MySQL schema, JWT auth, all CRUD endpoints  |
+| Phase 3 | ✅ Complete    | Frontend-Backend integration — all pages connected to real API |
+| Phase 4 | 🔄 In Progress | Fixes & deployment prep                                        |
+| Phase 5 | 📋 Planned     | Advanced admin features (audit log viewer, analytics)          |
+| Phase 6 | 📋 Planned     | Security hardening (rate limiting, HTTPS enforcement)          |
 
-2. ✅ **Phase 2**: Backend setup
-   - ✅ Created PHP API structure with all endpoints
-   - ✅ Implemented MySQL schema (6 tables with proper relationships)
-   - ✅ JWT authentication with token generation/validation
-   - ✅ All CRUD operations for elections, candidates, votes
+### Phase 4 Progress (Current)
 
-3. ✅ **Phase 3**: Frontend-Backend integration (COMPLETE)
-   - ✅ Connected all frontend pages to real backend APIs
-   - ✅ AuthContext integrated with backend login/register
-   - ✅ VotingPage fetches elections & candidates from backend
-   - ✅ ResultsPage displays real vote counts and statistics
-   - ✅ Admin pages (ManageElections, ManageCandidates, ViewResults) fully functional
-   - ✅ Updated frontend/backend README with Phase 3 details
-
-4. ⏳ **Phase 4**: Database deployment & testing
-   - ⏳ Set up MySQL database (local or hosted)
-   - ⏳ Deploy backend to Railway.app
-   - ⏳ Deploy frontend to Vercel
-   - ⏳ End-to-end testing
-
-5. 📋 **Phase 5**: Advanced admin features (optional)
-   - Position management
-   - Audit log viewer
-   - User management dashboard
-   - Advanced analytics & charts
-
-6. 📋 **Phase 6**: Security hardening & optimization
-   - Additional encryption, rate limiting
-   - Performance optimization
-   - HTTPS enforcement
+- ✅ Fixed PHP `pdo_mysql` extension configuration (was causing 500/CORS errors locally)
+- ✅ Removed `cors.php` boilerplate — CORS now handled globally in `backend/index.php`
+- ✅ Fixed admin login redirect — now uses `user.role` from DB, not reg number prefix
+- ✅ Migrated frontend from Create React App to **Vite** (fixes Vercel build error 126)
+- ⏳ Local end-to-end testing (register → login → vote → results → admin tasks)
+- ⏳ Deploy backend to Railway.app
+- ⏳ Deploy frontend to Vercel
+- ⏳ Connect production environments and run end-to-end test online
 
 ---
 
 ## ⚙️ Configuration
 
-### Environment Variables
+### Frontend — Environment Variables
 
-**Frontend** (`.env.local`):
+Create `frontend/.env.local`:
+
 ```env
-REACT_APP_API_URL=http://localhost:8000
-REACT_APP_ENV=development
+# Vite reads VITE_* variables (replaces REACT_APP_* from CRA era)
+VITE_API_URL=http://localhost:8000
 ```
 
-**Backend** (`.env`):
+For production on Vercel, add `VITE_API_URL=https://your-railway-backend-url.railway.app` in Vercel project settings.
+
+### Backend — Environment Variables
+
+`backend/.env` (already configured locally):
+
 ```env
 DB_HOST=localhost
-DB_USER=root
+DB_USER=evoting
+DB_PASS=your_password
 DB_NAME=evoting_system
-JWT_SECRET=your_secret_key
+JWT_SECRET=your_very_secure_random_string
+JWT_EXPIRY=900        # Token expiry in seconds (900 = 15 minutes)
+FRONTEND_URL=http://localhost:3000
 ```
 
-For production, update URLs and set `REACT_APP_ENV=production`
+For production on Railway, set these as environment variables in the Railway service dashboard.
 
 ---
 
 ## 🔐 Security
 
-- All passwords hashed with bcrypt
-- JWT tokens for authentication
-- Voter IDs hashed in database (anonymized)
-- Input validation and sanitization
-- CORS protection
-- Rate limiting on authentication endpoints
-- Audit logging of all admin actions
-- HTTPS enforced in production
+- Passwords hashed with **bcrypt** (never stored in plaintext)
+- **JWT tokens** for stateless authentication (15-min expiry)
+- Voter IDs hashed with **SHA-256** in votes table (vote anonymization)
+- Input validation on both client and server
+- **CORS restricted** to known origins (not wildcard `*`)
+- Admin routes protected server-side by JWT role check (`role === 'admin'`)
+- Audit logging of all admin actions in `audit_log` table
 
 ---
 
 ## 🧪 Testing Checklist
 
-### Frontend
-- [ ] `npm start` - App loads without errors
+### Local Setup
+
+- [ ] MySQL running and `evoting_system` database exists with all 6 tables
+- [ ] PHP server running on `http://localhost:8000` (started with `index.php`)
+- [ ] React app running on `http://localhost:3000` (started with `npm run start`)
 - [ ] No console errors in browser DevTools
-- [ ] Can navigate to all public pages
-- [ ] Protected routes redirect to /login when not authenticated
-- [ ] LocalStorage only contains 'token'
 
-### Backend
-- [ ] PHP server runs on http://localhost:8000
-- [ ] MySQL database created with all tables
-- [ ] Registration API returns success response
-- [ ] Login API returns JWT token
-- [ ] Protected routes check for valid token
+### User Flow
 
-### Integration
-- [ ] Register new user → data saved in DB
-- [ ] Login with credentials → receive token → redirected to /dashboard
-- [ ] Logout → token cleared → redirected to /login
-- [ ] Admin can access /admin dashboard
-- [ ] Regular users cannot access /admin
-- [ ] Create election → Appears in voting page
-- [ ] Vote submission → Vote stored in DB
-- [ ] View results → Shows vote counts
+- [ ] Register new voter → data saved in `users` table
+- [ ] Login with voter credentials → JWT returned → redirected to `/dashboard`
+- [ ] Logout → token cleared → redirected to `/login`
+- [ ] Create election (admin) → appears in voter's dashboard
+- [ ] Vote submission → stored in `votes` table with hashed voter ID
+- [ ] View results → shows correct vote counts per candidate
+
+### Admin Flow
+
+- [ ] Admin added to DB manually with `role = 'admin'`
+- [ ] Admin logs in via `/login` → automatically redirected to `/admin`
+- [ ] Regular voter cannot access `/admin` (redirected to `/dashboard`)
+- [ ] Admin can create/edit/delete elections and candidates
 
 ---
 
-## 🚢 Deployment (Free Stack)
+## 🚢 Deployment
 
-### Step 1: Backend & Database (Railway.app - FREE)
-1. Create Railway account at [railway.app](https://railway.app)
-2. Create new project
-3. Add MySQL service (Railway provisions automatically)
-4. Add PHP service from GitHub repo
-5. Set environment variables:
-   - `DB_HOST`, `DB_USER`, `DB_PASS`, `DB_NAME` (from MySQL service)
-   - `JWT_SECRET` (generate secure random string)
-   - `FRONTEND_URL` (your Vercel domain)
-6. Deploy - Railway runs your PHP backend on a public URL
-7. Import database schema from `database/schemas/schema.sql`
+### Step 1: Backend + Database (Railway.app)
 
-### Step 2: Frontend (Vercel - FREE)
-1. Create Vercel account at [vercel.com](https://vercel.com)
-2. Connect GitHub repository
-3. Set environment variable:
-   - `REACT_APP_API_URL` = your Railway backend URL (e.g., https://your-project-railway.railway.app)
-4. Deploy - Vercel auto-deploys on GitHub push
+1. Create account at [railway.app](https://railway.app)
+2. Create new project → add **MySQL** service
+3. Import this GitHub repository as a **PHP** service
+4. Set environment variables in Railway (DB_HOST, DB_USER, DB_PASS, DB_NAME, JWT_SECRET, FRONTEND_URL)
+5. Import schema: run `database/schemas/schema.sql` against Railway MySQL
+6. Railway generates a public URL for your backend (e.g., `https://your-app.railway.app`)
+
+### Step 2: Frontend (Vercel)
+
+1. Create account at [vercel.com](https://vercel.com)
+2. Import this GitHub repository
+3. Set **Root Directory** to `frontend/`
+4. Add environment variable: `VITE_API_URL` = your Railway backend URL
+5. Deploy — Vercel auto-deploys on every push to GitHub
 
 ### Result
-- Frontend: `https://your-project.vercel.app` (free domain)
-- Backend: `https://your-project-railway.railway.app` (free domain)
-- Database: Hosted on Railway's MySQL
-- **Total Cost**: $0 (Railway's free tier includes $5/month credits)
 
-See individual folder READMEs for detailed setup instructions.
+- Frontend: `https://your-project.vercel.app`
+- Backend API: `https://your-project.railway.app`
+- Database: Hosted on Railway MySQL
+- **Cost**: $0 (Railway's free $5/month credit covers small traffic)
 
 ---
 
 ## 📚 Documentation
 
-Each folder contains detailed documentation:
-- **frontend/README.md** - React setup, structure, and development guide
-- **backend/README.md** - PHP API setup and API endpoint documentation
-- **database/README.md** - Database schema and setup instructions
+- **[frontend/README.md](frontend/README.md)** — React setup, Vite config, and frontend dev guide
+- **[backend/README.md](backend/README.md)** — PHP API setup and endpoint documentation
+- **[database/README.md](database/README.md)** — Schema and database setup instructions
 
 ---
 
-## 📅 Timeline
-
-- **Phase 1**: ✅ Completed
-- **Phase 2**: ✅ Completed (Backend fully implemented)
-- **Phase 3**: ✅ Completed (Frontend-Backend integration)
-- **Phase 4**: 🔄 Next (Database deployment & testing)
-- **Phase 5-6**: Planned
-
----
-
-**Last Updated**: 2026-06-12  
-**Version**: 0.3.0
+**Last Updated**: 2026-06-26
+**Version**: 0.4.0
