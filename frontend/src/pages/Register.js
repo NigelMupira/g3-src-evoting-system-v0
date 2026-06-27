@@ -26,13 +26,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "../context/AuthContext";
-
-const schools = ["Engineering", "Business", "Arts"];
-const courses = {
-  Engineering: ["ENG101", "ENG102", "ENG103"],
-  Business: ["BUS201", "BUS202", "BUS203"],
-  Arts: ["ART301", "ART302", "ART303"],
-};
+import { SCHOOLS, COURSES } from "../data/schools";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -242,7 +236,7 @@ const Register = () => {
                 fullWidth
                 label="Registration Number"
                 name="regNumber"
-                placeholder="e.g., STU2024001"
+                placeholder="e.g., H230001A"
                 value={formData.regNumber}
                 onChange={handleChange}
                 error={!!fieldErrors.regNumber}
@@ -274,7 +268,7 @@ const Register = () => {
                   }}
                 >
                   <MenuItem value="">Select School</MenuItem>
-                  {schools.map((school) => (
+                  {SCHOOLS.map((school) => (
                     <MenuItem key={school} value={school}>
                       {school}
                     </MenuItem>
@@ -298,7 +292,7 @@ const Register = () => {
                 >
                   <MenuItem value="">Select Course</MenuItem>
                   {formData.school &&
-                    courses[formData.school].map((course) => (
+                    COURSES[formData.school]?.map((course) => (
                       <MenuItem key={course} value={course}>
                         {course}
                       </MenuItem>

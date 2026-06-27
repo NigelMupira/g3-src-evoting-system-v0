@@ -4,13 +4,15 @@
 // Static data for schools and their associated courses
 // This is centralized for easy updates when schools/courses change
 
-export const SCHOOLS = ["Engineering", "Business", "Arts"];
+export const SCHOOLS = ["Engineering & Technology", "Industrial Sciences & Technology", "Allied Health Sciences", "Business & Management Sciences", "Information Science & Technology"];
 
 // Each school has an array of course codes available to students
 export const COURSES = {
-  Engineering: ["ENG101", "ENG102", "ENG103"],
-  Business: ["BUS201", "BUS202", "BUS203"],
-  Arts: ["ART301", "ART302", "ART303"],
+  "Engineering & Technology": ["HEBE", "HECP", "HEEE", "HEIM", "HEPT", "HEMT"],
+  "Industrial Sciences & Technology": ["HSFP", "HSBT"],
+  "Allied Health Sciences": ["HSPT", "HADR", "HATR"],
+  "Business & Management Sciences": ["HBFE", "HBEC", "HBFA"],
+  "Information Science & Technology": ["HICS", "HIIT", "HISA", "HISE"],
 };
 
 /**

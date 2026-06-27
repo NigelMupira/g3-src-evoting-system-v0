@@ -174,7 +174,7 @@ const Login = () => {
                 fullWidth
                 label="Registration Number"
                 name="regNumber"
-                placeholder="e.g., STU2024001"
+                placeholder="e.g., H230001A"
                 value={formData.regNumber}
                 onChange={handleChange}
                 error={!!fieldErrors.regNumber}
