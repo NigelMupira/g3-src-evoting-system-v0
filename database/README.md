@@ -1,62 +1,115 @@
-# Database - SRC E-Voting System  
+# Database - SRC E-Voting System
 
-## Architecture  
-The database is designed with a 6-table relational schema to manage users, elections, positions, candidates, votes, and audit logs. Key components include:  
-- **Vote anonymity**: Voter IDs are hashed using SHA-256 (regNumber + positionId) to ensure privacy.  
-- **Audit trail**: All admin actions are logged with timestamps and user context.  
-- **Referential integrity**: Foreign keys enforce consistency across tables.  
+## Overview
+MySQL 8.0+ database with 8 tables managing users, elections, candidates, votes, and security features. Includes automated setup scripts and comprehensive schema with referential integrity.
 
-## Directory Structure  
-```  
-database/  
-├── schemas/             # Full table definitions (schema.sql)  
-├── migrations/          # Version-controlled schema changes  
-├── seeds/               # Sample data for development  
-├── setup.bat            # Windows one-command setup  
-├── setup.sh             # Linux/macOS one-command setup  
-└── README.md            # This file  
-```  
+## Directory Structure
+```
+database/
+├── schemas/
+│   └── schema.sql           # Complete table definitions with security tables
+├── migrations/              # Version-controlled schema changes
+├── seeds/                   # Sample data for development
+├── setup.bat                # Windows automated setup
+├── setup.sh                 # Linux/macOS automated setup
+└── README.md                # This file
+```
 
-## Setup  
-### Prerequisites  
-- MySQL 5.7+ or 8.0+  
-- MySQL client (`mysql` command)  
+## Setup
 
-### Steps  
-1. **Create database**:  
-   ```bash  
-   mysql -u root -p  
-   CREATE DATABASE evoting_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  
-   exit  
-   ```  
-2. **Import schema**:  
-   ```bash  
-   mysql -u root -p evoting_system < schemas/schema.sql  
-   ```  
-3. **Seed data (optional)**:  
-   ```bash  
-   mysql -u root -p evoting_system < seeds/sample_data.sql  
-   ```  
+### Prerequisites
+- MySQL 5.7+ or 8.0+
+- MySQL client (`mysql` command)
+- Administrative MySQL user (root or equivalent)
 
-## Schema Overview  
-### Tables  
-| Table       | Purpose                          | Key Columns                          |  
-|-------------|----------------------------------|--------------------------------------|  
-| `users`     | Student/admin accounts           | `id`, `reg_number`, `password_hash`, `role` |  
-| `elections` | Election events                  | `id`, `title`, `start_date`, `is_active` |  
-| `positions` | Positions within elections       | `id`, `election_id`, `title`         |  
-| `candidates`| Candidates for positions         | `id`, `position_id`, `first_name`    |  
-| `votes`     | Cast votes (anonymized)          | `id`, `election_id`, `voter_id_hash` |  
-| `audit_log` | Admin action tracking            | `id`, `admin_id`, `action`, `created_at` |  
+### Option 1: Automated Setup (Recommended)
 
-### Key Constraints  
-- **Unique vote prevention**: `UNIQUE(voter_id_hash, position_id, election_id)`  
-- **Cascade deletes**: Deleting an election removes related data.  
+**Windows:**
+```bash
+cd database
+setup.bat
+```
 
-## Security Notes  
-- **Passwords**: bcrypt-hashed in `users.password_hash` (never stored in plain text).  
-- **Vote privacy**: `voter_id_hash` is irreversible.  
-- **Least privilege**: Use a dedicated DB user with limited access in production.  
-- **Production hardening**: Disable remote root login, enable SSL/TLS.  
+**Linux/macOS:**
+```bash
+cd database
+chmod +x setup.sh
+./setup.sh
+```
 
-**Last Updated**: 2026-06-26
+### Option 2: Manual Setup
+
+```bash
+# Create database
+mysql -u root -p
+```
+```sql
+CREATE DATABASE evoting_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+exit
+```
+
+```bash
+# Import schema
+mysql -u root -p evoting_system < schemas/schema.sql
+```
+
+## Schema Overview
+
+### Core Tables (5)
+- **users**: Student/admin accounts with bcrypt password hashing
+- **elections**: Election events with activation control
+- **positions**: Positions within elections (President, VP, etc.)
+- **candidates**: Candidates with bios, manifestos, and media
+- **votes**: Anonymized votes using SHA-256 voter ID hashing
+
+### Security Tables (3)
+- **audit_log**: Tracks all admin actions with timestamps and IP addresses
+- **rate_limits**: API rate limiting for brute force protection
+- **token_blacklist**: Session management and token revocation
+
+## Key Features
+
+### Vote Integrity
+- **Anonymity**: Voter IDs hashed with SHA-256(regNumber + positionId)
+- **Double voting prevention**: UNIQUE constraint on (voter_id_hash, position_id, election_id)
+- **Cascade deletes**: Deleting elections removes related data automatically
+
+### Security
+- **Password security**: bcrypt hashing with salt
+- **Audit trail**: All admin actions logged
+- **Rate limiting**: Prevents API abuse
+- **Token management**: Secure session revocation
+
+## Default Admin User
+
+The schema includes a default admin user:
+- **Registration**: A999999Z
+- **Password**: Admin123!
+- **Role**: admin
+
+**Important**: Change this password in production.
+
+## Backup & Restore
+
+```bash
+# Backup
+mysqldump -u root -p evoting_system > backup.sql
+
+# Restore
+mysql -u root -p evoting_system < backup.sql
+```
+
+## Maintenance
+
+```sql
+-- Clean old audit logs (30 days)
+DELETE FROM audit_log WHERE timestamp < DATE_SUB(NOW(), INTERVAL 30 DAY);
+
+-- Clean old rate limits (1 day)
+DELETE FROM rate_limits WHERE timestamp < DATE_SUB(NOW(), INTERVAL 1 DAY);
+
+-- Clean expired tokens
+DELETE FROM token_blacklist WHERE expires_at < NOW();
+```
+
+**Last Updated**: 2026-06-28

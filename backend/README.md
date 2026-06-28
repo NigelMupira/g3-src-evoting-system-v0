@@ -44,10 +44,18 @@ backend/
 │   ├── votes/
 │   │   ├── submit.php    # POST - cast vote (auth required)
 │   │   ├── validate.php  # GET  - check if user can vote in position (auth required)
-│   │   └── results.php   # GET  - get vote counts/statistics for election
+│   │   ├── results.php   # GET  - get vote counts/statistics for election
+│   │   └── history.php   # GET  - get user voting history (auth required)
+│   ├── admin/
+│   │   ├── stats.php     # GET  - admin dashboard statistics (admin only)
+│   │   ├── activity.php  # GET  - admin activity timeline (admin only)
+│   │   └── audit-logs.php # GET  - audit log viewer (admin only)
 │   └── middleware/
-│       ├── JWTAuth.php   # JWT token generation, validation, and header parsing
-│       └── AdminAuth.php # Role-based auth: requireAuth() and requireAdmin()
+│       ├── JWTAuth.php           # JWT token generation, validation, and header parsing
+│       ├── AdminAuth.php         # Role-based auth: requireAuth() and requireAdmin()
+│       ├── RateLimiter.php       # API rate limiting for brute force protection
+│       ├── InputValidator.php    # Input sanitization and validation
+│       └── SecurityHeaders.php   # OWASP-compliant security headers
 ├── config/
 │   └── database.php      # PDO MySQL connection using .env variables
 └── models/
@@ -171,6 +179,15 @@ Backend API will be available at `http://localhost:8000`
 | POST   | `/api/votes/submit.php`                                     | Bearer JWT | Cast vote (one per position) |
 | GET    | `/api/votes/validate.php?election_id={id}&position_id={id}` | Bearer JWT | Check if user can vote       |
 | GET    | `/api/votes/results.php?election_id={id}`                   | None       | Get vote counts              |
+| GET    | `/api/votes/history.php`                                   | Bearer JWT | Get user voting history      |
+
+### Admin
+
+| Method | Endpoint                      | Auth      | Description                      |
+| ------ | ----------------------------- | --------- | -------------------------------- |
+| GET    | `/api/admin/stats.php`        | Admin JWT | Dashboard statistics            |
+| GET    | `/api/admin/activity.php`     | Admin JWT | Activity timeline               |
+| GET    | `/api/admin/audit-logs.php`   | Admin JWT | Audit log viewer                |
 
 ---
 
@@ -195,5 +212,9 @@ The login endpoint returns the user's role, and the frontend automatically redir
 - Voter IDs are hashed before storing (`SHA-256(regNumber + positionId)`) — not reversible
 - CORS restricted to known origins in `index.php` (not open `*`)
 - Admin endpoints verify `role === 'admin'` server-side via `AdminAuth::requireAdmin()`
+- **Rate limiting**: 5 requests per minute on login endpoint
+- **Input validation**: Sanitization of all user inputs
+- **Security headers**: OWASP-compliant headers (CSP, HSTS, XSS protection, clickjacking prevention)
+- **Audit logging**: All admin actions tracked for accountability
 
-**Last Updated**: 2026-06-26
+**Last Updated**: 2026-06-28
