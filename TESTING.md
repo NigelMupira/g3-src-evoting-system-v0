@@ -96,14 +96,13 @@ npm run start
 
 #### Test Admin Flow
 
-1. **Create Admin User:**
-```sql
-INSERT INTO users (reg_number, first_name, last_name, password_hash, role, is_active)
-VALUES ('ADMIN01', 'Admin', 'User', '$2y$10$hashedpasswordhere', 'admin', TRUE);
-```
+1. **Default Admin User:**
+   The setup scripts automatically create a default admin user:
+   - Registration: A999999Z
+   - Password: #adm!n@sup3r
 
 2. **Admin Dashboard:**
-   - Login as admin
+   - Login as admin (A999999Z / #adm!n@sup3r)
    - Verify redirect to admin dashboard
    - Check statistics display
    - Test audit log viewer

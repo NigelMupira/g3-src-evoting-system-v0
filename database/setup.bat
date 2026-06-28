@@ -52,6 +52,18 @@ if %ERRORLEVEL% EQU 0 (
     exit /b 1
 )
 
+REM Create default admin user
+echo Creating default admin user...
+mysql -u %db_user% -p%db_password% %db_name% < database\seeds\create_admin.sql
+
+if %ERRORLEVEL% EQU 0 (
+    echo Default admin user created successfully
+) else (
+    echo Failed to create admin user
+    pause
+    exit /b 1
+)
+
 REM Verify tables
 echo.
 echo Database Tables:
@@ -76,6 +88,10 @@ if /i "%create_env%"=="y" (
 
 echo.
 echo Database setup complete!
+echo.
+echo Default Admin Credentials:
+echo   Registration: A999999Z
+echo   Password: #adm!n@sup3r
 echo.
 echo Next steps:
 echo 1. Update backend\.env with JWT_SECRET

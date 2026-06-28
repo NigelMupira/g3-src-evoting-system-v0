@@ -189,7 +189,7 @@ cp .env.example .env
 # Edit .env with your database credentials
 # Default admin user will be created automatically:
 # Registration: A999999Z
-# Password: Admin123!
+# Password: #adm!n@sup3r
 ```
 
 **Edit `.env` file:**
@@ -234,7 +234,7 @@ npm run start
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
-- **Default Admin**: A999999Z / Admin123!
+- **Default Admin**: A999999Z / #adm!n@sup3r
 
 ---
 

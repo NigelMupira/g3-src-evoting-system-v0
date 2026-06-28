@@ -9,7 +9,8 @@ database/
 ├── schemas/
 │   └── schema.sql           # Complete table definitions with security tables
 ├── migrations/              # Version-controlled schema changes
-├── seeds/                   # Sample data for development
+├── seeds/
+│   └── create_admin.sql     # Default admin user creation script
 ├── setup.bat                # Windows automated setup
 ├── setup.sh                 # Linux/macOS automated setup
 └── README.md                # This file
@@ -51,6 +52,9 @@ exit
 ```bash
 # Import schema
 mysql -u root -p evoting_system < schemas/schema.sql
+
+# Create default admin user
+mysql -u root -p evoting_system < seeds/create_admin.sql
 ```
 
 ## Schema Overview
@@ -82,12 +86,17 @@ mysql -u root -p evoting_system < schemas/schema.sql
 
 ## Default Admin User
 
-The schema includes a default admin user:
+The setup scripts automatically create a default admin user:
 - **Registration**: A999999Z
-- **Password**: Admin123!
+- **Password**: #adm!n@sup3r
 - **Role**: admin
 
 **Important**: Change this password in production.
+
+To manually recreate the admin user:
+```bash
+mysql -u your_user -p evoting_system < seeds/create_admin.sql
+```
 
 ## Backup & Restore
 
