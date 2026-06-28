@@ -92,6 +92,29 @@ CREATE TABLE IF NOT EXISTS audit_log (
     INDEX idx_timestamp (timestamp)
 );
 
+-- Rate Limiting Table (Track API request rates for security)
+CREATE TABLE IF NOT EXISTS rate_limits (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    identifier VARCHAR(45) NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    endpoint VARCHAR(255),
+    INDEX idx_identifier_timestamp (identifier, timestamp),
+    INDEX idx_timestamp (timestamp)
+);
+
+-- Token Blacklist Table (For logout functionality and token revocation)
+CREATE TABLE IF NOT EXISTS token_blacklist (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    token_jti VARCHAR(255) NOT NULL UNIQUE,
+    user_id INT,
+    revoked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    reason VARCHAR(255),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_token_jti (token_jti),
+    INDEX idx_expires_at (expires_at)
+);
+
 -- Create indexes for common queries
 CREATE INDEX idx_election_active ON elections(is_active, end_date);
 CREATE INDEX idx_candidate_election ON candidates(election_id);

@@ -13,6 +13,8 @@
 /frontend/build
 /frontend/dist
 
+# projectcontext
+/prompt.txt
 
 # misc
 .DS_Store

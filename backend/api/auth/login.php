@@ -6,11 +6,20 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../middleware/JWTAuth.php';
+require_once __DIR__ . '/../middleware/RateLimiter.php';
 
 use App\User;
 use App\JWTAuth;
+use App\RateLimiter;
 
 try {
+    // ============================================
+    // Rate Limiting
+    // ============================================
+    // Prevent brute force attacks on login endpoint
+    $rateLimiter = new RateLimiter($pdo, 5, 60); // 5 requests per minute
+    $rateLimiter->checkLimit();
+
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         throw new \Exception('Only POST requests allowed');
     }
@@ -44,6 +53,20 @@ try {
     // ============================================
     $jwtAuth = new JWTAuth($_ENV['JWT_SECRET'] ?? 'your_secret_key');
     $token = $jwtAuth->generateToken($userData['id'], $userData['reg_number'], $userData['role']);
+
+    // ============================================
+    // Log Successful Login
+    // ============================================
+    $clientIP = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $logStmt = $pdo->prepare("
+        INSERT INTO audit_log (action, user_id, details, ip_address)
+        VALUES ('LOGIN', ?, ?, ?)
+    ");
+    $logStmt->execute([
+        $userData['id'],
+        json_encode(['reg_number' => $regNumber, 'timestamp' => date('Y-m-d H:i:s')]),
+        $clientIP
+    ]);
 
     http_response_code(200);
     echo json_encode([

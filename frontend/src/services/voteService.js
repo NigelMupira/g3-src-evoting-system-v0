@@ -48,3 +48,12 @@ export const getElectionResults = async (electionId, positionId = null) => {
 export const getCandidates = async (electionId) => {
   return apiGet(`/api/candidates/list.php?election_id=${electionId}`);
 };
+
+// ============================================
+// Get User Voting History
+// ============================================
+// Fetch user's voting history and participation statistics
+// Returns elections participated in, votes cast, and available elections
+export const getVotingHistory = async () => {
+  return apiGet("/api/votes/history.php");
+};

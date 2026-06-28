@@ -28,12 +28,16 @@ import {
   BarChart,
   LogoutRounded,
   Settings,
+  Security,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import Header from "../../components/common/Header";
 import ManageElections from "./ManageElections";
 import ManageCandidates from "./ManageCandidates";
 import ViewResults from "./ViewResults";
+import AuditLogs from "./AuditLogs";
+import AdminDashboardHome from "./AdminDashboardHome";
 
 const drawerWidth = 260;
 
@@ -47,227 +51,37 @@ const AdminDashboard = () => {
     navigate("/login");
   };
 
+  // Handle tab changes with browser history
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    // Update URL without full page reload for better back button behavior
+    window.history.replaceState({ tab: tabId }, '', `?tab=${tabId}`);
+  };
+
+  // Handle browser back button
+  React.useEffect(() => {
+    const handlePopState = (event) => {
+      if (event.state && event.state.tab) {
+        setActiveTab(event.state.tab);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const renderContent = () => {
     switch (activeTab) {
       case "Dashboard":
-        return (
-          <Box sx={{ width: "100%", maxWidth: 1200 }}>
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 700,
-                mb: 1,
-                color: "#1A1A1A",
-              }}
-            >
-              Admin Dashboard
-            </Typography>
-            <Typography
-              variant="body1"
-              sx={{
-                color: "#666666",
-                mb: 4,
-              }}
-            >
-              Manage elections, candidates, and view comprehensive results
-            </Typography>
-
-            <Grid container spacing={3}>
-              {/* Manage Elections */}
-              <Grid item xs={12} sm={6} md={4}>
-                <Card
-                  sx={{
-                    height: "100%",
-                    p: 3,
-                    borderRadius: "0.75rem",
-                    border: "1px solid #E0E0E0",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      transform: "translateY(-8px)",
-                      boxShadow: "0 16px 32px rgba(0, 48, 135, 0.12)",
-                    },
-                  }}
-                  onClick={() => setActiveTab("ManageElections")}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 60,
-                      height: 60,
-                      borderRadius: "0.5rem",
-                      backgroundColor: "rgba(0, 48, 135, 0.1)",
-                      mb: 2,
-                    }}
-                  >
-                    <HowToVote sx={{ fontSize: 32, color: "#003087" }} />
-                  </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                    Manage Elections
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#666666", mb: 2 }}>
-                    Create, edit, and manage election events
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    sx={{
-                      background: "#003087",
-                      textTransform: "none",
-                      "&:hover": { background: "#0052CC" },
-                    }}
-                  >
-                    Manage
-                  </Button>
-                </Card>
-              </Grid>
-
-              {/* Manage Candidates */}
-              <Grid item xs={12} sm={6} md={4}>
-                <Card
-                  sx={{
-                    height: "100%",
-                    p: 3,
-                    borderRadius: "0.75rem",
-                    border: "1px solid #E0E0E0",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      transform: "translateY(-8px)",
-                      boxShadow: "0 16px 32px rgba(0, 48, 135, 0.12)",
-                    },
-                  }}
-                  onClick={() => setActiveTab("ManageCandidates")}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 60,
-                      height: 60,
-                      borderRadius: "0.5rem",
-                      backgroundColor: "rgba(212, 160, 23, 0.1)",
-                      mb: 2,
-                    }}
-                  >
-                    <People sx={{ fontSize: 32, color: "#D4A017" }} />
-                  </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                    Manage Candidates
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#666666", mb: 2 }}>
-                    Add, edit, and remove candidates
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    sx={{
-                      borderColor: "#D4A017",
-                      color: "#D4A017",
-                      textTransform: "none",
-                      "&:hover": {
-                        backgroundColor: "rgba(212, 160, 23, 0.05)",
-                      },
-                    }}
-                  >
-                    Manage
-                  </Button>
-                </Card>
-              </Grid>
-
-              {/* View Results */}
-              <Grid item xs={12} sm={6} md={4}>
-                <Card
-                  sx={{
-                    height: "100%",
-                    p: 3,
-                    borderRadius: "0.75rem",
-                    border: "1px solid #E0E0E0",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      transform: "translateY(-8px)",
-                      boxShadow: "0 16px 32px rgba(0, 48, 135, 0.12)",
-                    },
-                  }}
-                  onClick={() => setActiveTab("ViewResults")}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 60,
-                      height: 60,
-                      borderRadius: "0.5rem",
-                      backgroundColor: "rgba(34, 197, 94, 0.1)",
-                      mb: 2,
-                    }}
-                  >
-                    <BarChart sx={{ fontSize: 32, color: "#22C55E" }} />
-                  </Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
-                    View Results
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#666666", mb: 2 }}>
-                    Analyze election results and statistics
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    sx={{
-                      borderColor: "#22C55E",
-                      color: "#22C55E",
-                      textTransform: "none",
-                      "&:hover": {
-                        backgroundColor: "rgba(34, 197, 94, 0.05)",
-                      },
-                    }}
-                  >
-                    View
-                  </Button>
-                </Card>
-              </Grid>
-            </Grid>
-
-            {/* System Info */}
-            <Card
-              sx={{
-                mt: 4,
-                p: 3,
-                borderRadius: "0.75rem",
-                backgroundColor: "#F8F9FA",
-                border: "1px solid #E0E0E0",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                <Settings sx={{ color: "#003087" }} />
-                <Typography variant="h6" sx={{ fontWeight: 700, color: "#1A1A1A" }}>
-                  System Status
-                </Typography>
-              </Box>
-              <Divider sx={{ my: 1.5 }} />
-              <Typography variant="body2" sx={{ color: "#666666" }}>
-                Admin User: <strong>{user?.firstName}</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#666666", mt: 0.5 }}>
-                Role: <strong>Administrator</strong>
-              </Typography>
-              <Typography variant="body2" sx={{ color: "#22C55E", mt: 0.5 }}>
-                ✓ System Online
-              </Typography>
-            </Card>
-          </Box>
-        );
+        return <AdminDashboardHome onNavigate={setActiveTab} />;
       case "ManageElections":
         return <ManageElections />;
       case "ManageCandidates":
         return <ManageCandidates />;
       case "ViewResults":
         return <ViewResults />;
+      case "AuditLogs":
+        return <AuditLogs />;
       default:
         return null;
     }
@@ -278,6 +92,7 @@ const AdminDashboard = () => {
     { label: "Elections", icon: <HowToVote />, id: "ManageElections" },
     { label: "Candidates", icon: <People />, id: "ManageCandidates" },
     { label: "Results", icon: <BarChart />, id: "ViewResults" },
+    { label: "Audit Logs", icon: <Security />, id: "AuditLogs" },
   ];
 
   return (
@@ -304,7 +119,9 @@ const AdminDashboard = () => {
             p: 2.5,
             background: "linear-gradient(135deg, #003087 0%, #0052CC 100%)",
             color: "white",
+            cursor: "pointer",
           }}
+          onClick={() => setActiveTab("Dashboard")}
         >
           <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: "0.5px" }}>
             Admin Panel
@@ -317,7 +134,7 @@ const AdminDashboard = () => {
             <ListItem
               button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => handleTabChange(item.id)}
               sx={{
                 mx: 1,
                 mb: 0.5,
@@ -372,21 +189,11 @@ const AdminDashboard = () => {
 
       {/* Main Content */}
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <AppBar
-          position="static"
-          sx={{
-            backgroundColor: "white",
-            color: "#1A1A1A",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
-            borderBottom: "1px solid #E0E0E0",
-          }}
-        >
-          <Toolbar>
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Administration
-            </Typography>
-          </Toolbar>
-        </AppBar>
+        <Header 
+          title="SRC E-Voting" 
+          showHomeButton={false}
+          navigateTo={() => setActiveTab("Dashboard")}
+        />
 
         <Box
           sx={{
@@ -395,6 +202,7 @@ const AdminDashboard = () => {
             p: 3,
             display: "flex",
             justifyContent: "center",
+            marginTop: "64px", // Offset for fixed header
           }}
         >
           {renderContent()}
