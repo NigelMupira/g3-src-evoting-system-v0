@@ -26,3 +26,11 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Database backups
+backup_*.sql
+*.sql.backup
+
+# Temporary files
+*.tmp
+*.temp
