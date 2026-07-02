@@ -104,10 +104,16 @@ npm run start
 2. **Admin Dashboard:**
    - Login as admin (A999999Z / #adm!n@sup3r)
    - Verify redirect to admin dashboard
-   - Check statistics display
+   - Check statistics display (users, elections, votes)
+   - Test activity timeline
    - Test audit log viewer
    - Create a new election
    - Add candidates to election
+
+3. **New Features Testing:**
+   - Test dark/light theme toggle
+   - Verify header navigation works correctly
+   - Check that theme preference persists
 
 ## Post-Deployment Testing
 

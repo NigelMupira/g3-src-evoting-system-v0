@@ -185,16 +185,21 @@ Backend API will be available at `http://localhost:8000`
 
 | Method | Endpoint                      | Auth      | Description                      |
 | ------ | ----------------------------- | --------- | -------------------------------- |
-| GET    | `/api/admin/stats.php`        | Admin JWT | Dashboard statistics            |
-| GET    | `/api/admin/activity.php`     | Admin JWT | Activity timeline               |
-| GET    | `/api/admin/audit-logs.php`   | Admin JWT | Audit log viewer                |
+| GET    | `/api/admin/stats.php`        | Admin JWT | Dashboard statistics (users, elections, votes) |
+| GET    | `/api/admin/activity.php`     | Admin JWT | Activity timeline (recent system activities) |
+| GET    | `/api/admin/audit-logs.php`   | Admin JWT | Audit log viewer with filtering |
 
 ---
 
 ## Admin Accounts
 
 Admins are **not** created through the registration endpoint.
-They are inserted directly into the `users` table with `role = 'admin'`:
+The database setup scripts automatically create a default admin user:
+- **Registration**: A999999Z
+- **Password**: #adm!n@sup3r
+- **Role**: admin
+
+For manual admin creation, insert directly into the `users` table:
 
 ```sql
 INSERT INTO users (reg_number, first_name, last_name, password_hash, role)
@@ -217,4 +222,4 @@ The login endpoint returns the user's role, and the frontend automatically redir
 - **Security headers**: OWASP-compliant headers (CSP, HSTS, XSS protection, clickjacking prevention)
 - **Audit logging**: All admin actions tracked for accountability
 
-**Last Updated**: 2026-06-28
+**Last Updated**: 2026-07-02

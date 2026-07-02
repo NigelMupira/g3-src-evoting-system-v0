@@ -20,13 +20,13 @@ import {
   CircularProgress,
   InputAdornment,
   IconButton,
-  AppBar,
-  Toolbar,
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "../context/AuthContext";
+import Header from "../components/common/Header";
+import ThemeToggle from "../components/common/ThemeToggle";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -116,13 +116,11 @@ const Login = () => {
         <meta name="description" content="Login to the SRC E-Voting System to cast your vote." />
       </Helmet>
 
-      <AppBar position="static" sx={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)" }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            SRC E-Voting
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <Header
+        title="SRC E-Voting"
+        showHomeButton={true}
+        rightContent={<ThemeToggle />}
+      />
 
       <Box
         sx={{

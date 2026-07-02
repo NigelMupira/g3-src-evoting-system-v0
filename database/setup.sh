@@ -25,12 +25,14 @@ echo ""
 
 # Create database and user
 echo "Creating database and user..."
-mysql -u root -p"$root_password" << EOF
+export MYSQL_PWD="$root_password"
+mysql -u root << EOF
 CREATE DATABASE IF NOT EXISTS $db_name;
 CREATE USER IF NOT EXISTS '$db_user'@'localhost' IDENTIFIED BY '$db_password';
 GRANT ALL PRIVILEGES ON $db_name.* TO '$db_user'@'localhost';
 FLUSH PRIVILEGES;
 EOF
+unset MYSQL_PWD
 
 if [ $? -eq 0 ]; then
     echo "✓ Database and user created successfully"
@@ -41,37 +43,41 @@ fi
 
 # Import schema
 echo "Importing schema..."
-mysql -u "$db_user" -p"$db_password" "$db_name" < database/schemas/schema.sql
+export MYSQL_PWD="$db_password"
+mysql -u "$db_user" "$db_name" < database/schemas/schema.sql
 
 if [ $? -eq 0 ]; then
     echo "✓ Schema imported successfully"
 else
     echo "✗ Failed to import schema"
+    unset MYSQL_PWD
     exit 1
 fi
 
 # Create default admin user
 echo "Creating default admin user..."
-mysql -u "$db_user" -p"$db_password" "$db_name" < database/seeds/create_admin.sql
+cat database/seeds/create_admin.sql | mysql -u "$db_user" "$db_name"
 
 if [ $? -eq 0 ]; then
     echo "✓ Default admin user created successfully"
 else
     echo "✗ Failed to create admin user"
+    unset MYSQL_PWD
     exit 1
 fi
 
 # Verify tables
 echo ""
 echo "Database Tables:"
-mysql -u "$db_user" -p"$db_password" "$db_name" -e "SHOW TABLES;"
+mysql -u "$db_user" "$db_name" -e "SHOW TABLES;"
+unset MYSQL_PWD
 
 # Create .env file for backend
 echo ""
 read -p "Create .env file for backend? (y/n): " -n 1 -r
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    cat > backend/.env << EOF
+    cat > ../backend/.env << EOF
 DB_HOST=localhost
 DB_USER=$db_user
 DB_PASS=$db_password
@@ -80,7 +86,7 @@ JWT_SECRET=$(openssl rand -base64 32)
 JWT_EXPIRY=900
 FRONTEND_URL=http://localhost:3000
 EOF
-    echo "✓ .env file created at backend/.env"
+    echo "✓ .env file created at ../backend/.env"
     echo "  Update JWT_SECRET if needed"
 fi
 

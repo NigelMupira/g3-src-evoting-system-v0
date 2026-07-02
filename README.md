@@ -28,6 +28,7 @@ A secure, web-based election management platform for Student Representative Coun
 - **Results Viewing**: View real-time election results with detailed analytics
 - **Candidate Info**: Access candidate profiles with bios and manifestos
 - **Voting History**: Track participation in elections
+- **Dark/Light Theme**: Toggle between dark and light themes for comfortable viewing
 
 ### For Administrators
 
@@ -37,6 +38,8 @@ A secure, web-based election management platform for Student Representative Coun
 - **Results Analytics**: Generate reports and visualize results with charts
 - **Audit Logging**: Track all system activities and admin actions
 - **Enhanced Dashboard**: Comprehensive admin interface with activity feeds
+- **Activity Timeline**: View recent system activities and user actions
+- **Admin Statistics**: Real-time metrics on users, elections, and votes
 
 > **Note on Admin Accounts**: Admins are **not** registered through the public registration page.
 > They are added directly to the `users` table in the database by a superuser/initial admin
@@ -54,6 +57,7 @@ A secure, web-based election management platform for Student Representative Coun
 - **Double Voting Prevention**: Backend enforces one vote per position per voter
 - **Audit Trail**: All admin actions logged for accountability
 - **Token Blacklisting**: Secure session management and revocation
+- **Clean URLs**: Client-side routing prevents file path exposure
 
 ---
 
@@ -88,11 +92,11 @@ g3-src-evoting-system/
 ├── frontend/                  # React + Vite application
 │   ├── src/
 │   │   ├── pages/             # Page components (Home, Login, Register, dashboards)
-│   │   ├── components/        # Reusable components (Header, Sidebar, ProtectedRoute)
-│   │   ├── context/           # Global state (AuthContext)
+│   │   ├── components/        # Reusable components (Header, Sidebar, ProtectedRoute, ThemeToggle)
+│   │   ├── context/           # Global state (AuthContext, ThemeContext)
 │   │   ├── services/          # API service layer (api.js, authService.js, etc.)
 │   │   ├── utils/             # Helpers, constants, validators
-│   │   ├── theme/             # Material-UI custom theme (school colors)
+│   │   ├── theme/             # Material-UI custom theme (light + dark themes)
 │   │   ├── App.js             # Root app with routing
 │   │   └── index.js           # App entry point
 │   ├── public/                # Static assets
@@ -116,7 +120,7 @@ g3-src-evoting-system/
 ├── database/
 │   ├── schemas/schema.sql     # MySQL table definitions
 │   ├── migrations/            # Database migration scripts
-│   ├── seeds/                 # Sample data scripts
+│   ├── seeds/                 # Sample data scripts (including admin user creation)
 │   ├── setup.bat / setup.sh   # One-command database setup scripts
 │   └── README.md              # Database documentation
 ├── TESTING.md                 # Comprehensive testing guide
@@ -173,7 +177,17 @@ exit
 ```bash
 # Import schema
 mysql -u root -p evoting_system < database/schemas/schema.sql
+
+# Create default admin user
+# Windows CMD:
+type database/seeds/create_admin.sql | mysql -u root -p evoting_system
+# Windows PowerShell:
+Get-Content database/seeds/create_admin.sql | mysql -u root -p evoting_system
+# Linux/macOS:
+cat database/seeds/create_admin.sql | mysql -u root -p evoting_system
 ```
+
+**Note:** The automated setup scripts handle both schema import and admin user creation automatically.
 
 ### 3. Backend Setup
 
@@ -235,6 +249,13 @@ npm run start
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **Default Admin**: A999999Z / #adm!n@sup3r
+
+### New Features
+
+- **Dark/Light Theme Toggle**: Icon button in header allows switching between themes
+- **Improved Admin Dashboard**: Real-time statistics and activity timeline
+- **Consistent Navigation**: Icon + text header links across all pages
+- **Enhanced Security**: Clean URLs prevent file path exposure
 
 ---
 

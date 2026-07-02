@@ -12,12 +12,15 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   // ============================================
   // React Plugin
   // ============================================
   // @vitejs/plugin-react enables JSX transform and Fast Refresh (HMR)
-  plugins: [react()],
+  plugins: [react({
+    // Use the new JSX runtime to avoid CJS warnings
+    jsxRuntime: 'automatic',
+  })],
 
   // ============================================
   // esbuild Loader for .js JSX Files
@@ -55,6 +58,21 @@ export default defineConfig({
   },
 
   // ============================================
+  // Build Configuration
+  // ============================================
+  // Configure build output for production deployment
+  build: {
+    outDir: 'dist',
+    // Enable history API fallback for clean URLs
+    // This prevents showing file paths in browser address bar
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
+
+  // ============================================
   // Global Defines (process.env polyfill)
   // ============================================
   // Some third-party libraries reference process.env in their browser builds.
@@ -62,5 +80,5 @@ export default defineConfig({
   define: {
     "process.env": {},
   },
-});
+}));
 

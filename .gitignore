@@ -13,7 +13,7 @@
 /frontend/build
 /frontend/dist
 
-# projectcontext
+# Project context
 /prompt.txt
 
 # misc
@@ -34,3 +34,4 @@ backup_*.sql
 # Temporary files
 *.tmp
 *.temp
+*.mjs.timestamp-*

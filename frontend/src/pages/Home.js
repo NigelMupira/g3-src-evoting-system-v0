@@ -7,9 +7,6 @@
 
 import React from "react";
 import {
-  AppBar,
-  Toolbar,
-  Typography,
   Button,
   Container,
   Box,
@@ -20,6 +17,8 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import Header from "../components/common/Header";
+import ThemeToggle from "../components/common/ThemeToggle";
 import SecurityIcon from "@mui/icons-material/Security";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import SpeedIcon from "@mui/icons-material/Speed";
@@ -66,12 +65,11 @@ const Home = () => {
       {/* ============================================ */}
       {/* Navigation Bar */}
       {/* ============================================ */}
-      <AppBar position="static" sx={{ boxShadow: "0 4px 12px rgba(0, 48, 135, 0.15)" }}>
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between", py: 1.5 }}>
-          <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: "0.5px" }}>
-            SRC E-Voting
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1 }}>
+      <Header
+        title="SRC E-Voting"
+        showHomeButton={false}
+        rightContent={
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
             <Button
               color="inherit"
               onClick={() => navigate("/login")}
@@ -98,9 +96,10 @@ const Home = () => {
             >
               Sign Up
             </Button>
+            <ThemeToggle />
           </Box>
-        </Toolbar>
-      </AppBar>
+        }
+      />
 
       {/* ============================================ */}
       {/* Hero Section */}

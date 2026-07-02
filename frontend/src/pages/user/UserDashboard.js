@@ -29,6 +29,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/common/Header";
+import ThemeToggle from "../../components/common/ThemeToggle";
 import VotingPage from "./VotingPage";
 import ResultsPage from "./ResultsPage";
 import UserDashboardHome from "./UserDashboardHome";
@@ -172,6 +173,9 @@ const UserDashboard = () => {
           >
             Logout
           </Button>
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+            <ThemeToggle />
+          </Box>
         </Box>
       </Drawer>
 

@@ -33,6 +33,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/common/Header";
+import ThemeToggle from "../../components/common/ThemeToggle";
 import ManageElections from "./ManageElections";
 import ManageCandidates from "./ManageCandidates";
 import ViewResults from "./ViewResults";
@@ -184,6 +185,9 @@ const AdminDashboard = () => {
           >
             Logout
           </Button>
+          <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+            <ThemeToggle />
+          </Box>
         </Box>
       </Drawer>
 

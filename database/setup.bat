@@ -25,12 +25,14 @@ set /p db_password="Enter database user password: "
 
 REM Create database and user
 echo Creating database and user...
+set MYSQL_PWD=%root_password%
 (
     echo CREATE DATABASE IF NOT EXISTS %db_name%;
     echo CREATE USER IF NOT EXISTS '%db_user%'^@'localhost' IDENTIFIED BY '%db_password%';
     echo GRANT ALL PRIVILEGES ON %db_name%.* TO '%db_user%'^@'localhost';
     echo FLUSH PRIVILEGES;
-) | mysql -u root -p%root_password%
+) | mysql -u root
+set MYSQL_PWD=
 
 if %ERRORLEVEL% EQU 0 (
     echo Database and user created successfully
@@ -42,24 +44,27 @@ if %ERRORLEVEL% EQU 0 (
 
 REM Import schema
 echo Importing schema...
-mysql -u %db_user% -p%db_password% %db_name% < database\schemas\schema.sql
+set MYSQL_PWD=%db_password%
+type schemas\schema.sql | mysql -u %db_user% %db_name%
 
 if %ERRORLEVEL% EQU 0 (
     echo Schema imported successfully
 ) else (
     echo Failed to import schema
+    set MYSQL_PWD=
     pause
     exit /b 1
 )
 
 REM Create default admin user
 echo Creating default admin user...
-mysql -u %db_user% -p%db_password% %db_name% < database\seeds\create_admin.sql
+type seeds\create_admin.sql | mysql -u %db_user% %db_name%
 
 if %ERRORLEVEL% EQU 0 (
     echo Default admin user created successfully
 ) else (
     echo Failed to create admin user
+    set MYSQL_PWD=
     pause
     exit /b 1
 )
@@ -67,7 +72,8 @@ if %ERRORLEVEL% EQU 0 (
 REM Verify tables
 echo.
 echo Database Tables:
-mysql -u %db_user% -p%db_password% %db_name% -e "SHOW TABLES;"
+mysql -u %db_user% %db_name% -e "SHOW TABLES;"
+set MYSQL_PWD=
 
 REM Create .env file
 echo.
@@ -81,8 +87,8 @@ if /i "%create_env%"=="y" (
         echo JWT_SECRET=your_jwt_secret_key_here
         echo JWT_EXPIRY=900
         echo FRONTEND_URL=http://localhost:3000
-    ) > backend\.env
-    echo .env file created at backend\.env
+    ) > ..\backend\.env
+    echo .env file created at ..\backend\.env
     echo Update JWT_SECRET with a secure random string
 )
 

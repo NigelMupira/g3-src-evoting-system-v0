@@ -29,7 +29,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { EmojiEvents, HowToVote } from "@mui/icons-material";
-import { getActiveElections } from "../../services/electionService";
+import { getAllElections } from "../../services/electionService";
 import { getElectionResults } from "../../services/voteService";
 
 const ResultsPage = () => {
@@ -50,7 +50,7 @@ const ResultsPage = () => {
     const fetchElections = async () => {
       try {
         setLoading(true);
-        const response = await getActiveElections();
+        const response = await getAllElections();
         setElections(response.data || []);
         if (response.data && response.data.length > 0) {
           setSelectedElectionId(response.data[0].id);
@@ -75,12 +75,14 @@ const ResultsPage = () => {
     const fetchResults = async () => {
       try {
         setLoading(true);
+        setError(null);
         const response = await getElectionResults(selectedElectionId);
+        console.log("Results response:", response);
         setResults(response.data || []);
         setStats(response.stats || {});
       } catch (err) {
         setError("Failed to load results for this election.");
-        console.error(err);
+        console.error("Error fetching results:", err);
       } finally {
         setLoading(false);
       }
@@ -139,7 +141,7 @@ const ResultsPage = () => {
   if (elections.length === 0) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="info">No elections available.</Alert>
+        <Alert severity="info">No elections available. Please create an election first.</Alert>
       </Container>
     );
   }

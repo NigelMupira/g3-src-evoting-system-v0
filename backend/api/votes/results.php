@@ -32,6 +32,8 @@ try {
     // ============================================
     // Fetch Results and Statistics
     // ============================================
+    $db = Database::getInstance();
+    $pdo = $db->getConnection();
     $vote = new Vote($pdo);
     $results = $vote->getResults($electionId, $positionId);
     $totalVotes = $vote->getTotalVotes($electionId);

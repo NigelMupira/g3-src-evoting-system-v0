@@ -18,8 +18,6 @@ import {
   LinearProgress,
   InputAdornment,
   IconButton,
-  AppBar,
-  Toolbar,
   CircularProgress,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
@@ -27,6 +25,8 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "../context/AuthContext";
 import { SCHOOLS, COURSES } from "../data/schools";
+import Header from "../components/common/Header";
+import ThemeToggle from "../components/common/ThemeToggle";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -139,13 +139,11 @@ const Register = () => {
         <meta name="description" content="Create your account to participate in SRC elections." />
       </Helmet>
 
-      <AppBar position="static" sx={{ boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)" }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-            SRC E-Voting
-          </Typography>
-        </Toolbar>
-      </AppBar>
+      <Header
+        title="SRC E-Voting"
+        showHomeButton={true}
+        rightContent={<ThemeToggle />}
+      />
 
       <Box
         sx={{

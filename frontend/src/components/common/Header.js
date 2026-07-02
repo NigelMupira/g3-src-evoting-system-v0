@@ -7,8 +7,8 @@
 
 import React from "react";
 import { AppBar, Toolbar, Typography, IconButton, Box, Avatar } from "@mui/material";
-import { Home } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "./ThemeToggle";
 
 /**
  * Header component with navigation
@@ -17,8 +17,9 @@ import { useNavigate } from "react-router-dom";
  *   - title: String - Title to display in header
  *   - showHomeButton: Boolean - Show home icon button (default: true)
  *   - navigateTo: Function - Custom navigation function for dashboard navigation
+ *   - rightContent: React Node - Additional content to display on the right side
  */
-const Header = ({ title = "SRC E-Voting", showHomeButton = true, navigateTo }) => {
+const Header = ({ title = "SRC E-Voting", showHomeButton = true, navigateTo, rightContent }) => {
   const navigate = useNavigate();
 
   const handleTitleClick = () => {
@@ -41,14 +42,18 @@ const Header = ({ title = "SRC E-Voting", showHomeButton = true, navigateTo }) =
     >
       <Toolbar>
         {/* App icon */}
-        <Avatar 
-          src="/srcev1.ico" 
+        <Avatar
+          src="/srcev1.ico"
           alt="SRC E-Voting"
-          sx={{ 
-            width: 32, 
-            height: 32, 
+          sx={{
+            width: 32,
+            height: 32,
             mr: 2,
             cursor: (navigateTo || showHomeButton) ? "pointer" : "default",
+            transition: "transform 0.2s ease",
+            "&:hover": {
+              transform: "scale(1.1)",
+            },
           }}
           onClick={handleTitleClick}
         />
@@ -62,7 +67,7 @@ const Header = ({ title = "SRC E-Voting", showHomeButton = true, navigateTo }) =
             fontWeight: 600,
             textDecoration: "none",
             "&:hover": {
-              textDecoration: (navigateTo || showHomeButton) ? "underline" : "none",
+              textDecoration: "none",
             },
           }}
           onClick={handleTitleClick}
@@ -70,8 +75,8 @@ const Header = ({ title = "SRC E-Voting", showHomeButton = true, navigateTo }) =
           {title}
         </Typography>
 
-        {/* Right side actions - can be extended with user menu, notifications, etc. */}
-        <Box>{/* User menu, notifications, etc. can go here */}</Box>
+        {/* Right side actions - theme toggle or custom content */}
+        <Box>{rightContent || <ThemeToggle />}</Box>
       </Toolbar>
     </AppBar>
   );

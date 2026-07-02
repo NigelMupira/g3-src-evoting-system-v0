@@ -38,6 +38,13 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
+The automated setup scripts:
+- Create the database and user
+- Import the schema
+- Create the default admin user
+- Display admin credentials upon completion
+- Use secure environment variables to avoid password warnings
+
 ### Option 2: Manual Setup
 
 ```bash
@@ -53,8 +60,14 @@ exit
 # Import schema
 mysql -u root -p evoting_system < schemas/schema.sql
 
-# Create default admin user
-mysql -u root -p evoting_system < seeds/create_admin.sql
+# Create default admin user (Windows CMD)
+type seeds/create_admin.sql | mysql -u root -p evoting_system
+
+# Create default admin user (Windows PowerShell)
+Get-Content seeds/create_admin.sql | mysql -u root -p evoting_system
+
+# Create default admin user (Linux/macOS)
+cat seeds/create_admin.sql | mysql -u root -p evoting_system
 ```
 
 ## Schema Overview
@@ -95,7 +108,14 @@ The setup scripts automatically create a default admin user:
 
 To manually recreate the admin user:
 ```bash
-mysql -u your_user -p evoting_system < seeds/create_admin.sql
+# Windows CMD
+type seeds/create_admin.sql | mysql -u your_user -p evoting_system
+
+# Windows PowerShell
+Get-Content seeds/create_admin.sql | mysql -u your_user -p evoting_system
+
+# Linux/macOS
+cat seeds/create_admin.sql | mysql -u your_user -p evoting_system
 ```
 
 ## Backup & Restore
@@ -121,4 +141,4 @@ DELETE FROM rate_limits WHERE timestamp < DATE_SUB(NOW(), INTERVAL 1 DAY);
 DELETE FROM token_blacklist WHERE expires_at < NOW();
 ```
 
-**Last Updated**: 2026-06-28
+**Last Updated**: 2026-07-02

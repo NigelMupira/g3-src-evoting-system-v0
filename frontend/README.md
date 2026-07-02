@@ -25,15 +25,18 @@ frontend/
 │   │       └── AuditLogs.js             # Audit log viewer
 │   ├── components/          # Reusable UI components
 │   │   └── common/
-│   │       └── Header.js               # Enhanced header with icon and navigation
-│   ├── context/             # Global state (AuthContext)
+│   │       ├── Header.js               # Enhanced header with icon and navigation
+│   │       └── ThemeToggle.js          # Dark/light theme toggle button
+│   ├── context/             # Global state
+│   │   ├── AuthContext.js              # Authentication and user role management
+│   │   └── ThemeContext.js            # Theme management (dark/light mode)
 │   ├── services/            # API service layer
 │   │   ├── api.js          # Centralized HTTP client
 │   │   ├── authService.js  # Login, register, logout
 │   │   ├── electionService.js # Election CRUD
 │   │   ├── voteService.js  # Voting and results
 │   │   └── auditService.js # Audit log access
-│   ├── theme/              # Material-UI custom theme
+│   ├── theme/              # Material-UI custom theme (light + dark)
 │   ├── App.js             # Root app with routing
 │   └── index.js           # App entry point
 ├── public/                # Static assets
@@ -68,6 +71,7 @@ frontend/
 
 ### Authentication
 - **AuthContext**: Manages JWT tokens and user role (admin/student)
+- **ThemeContext**: Manages dark/light theme preference with localStorage persistence
 - **api.js**: Centralized HTTP client with automatic token handling
 - **authService.js**: Login, register, logout logic
 
@@ -84,9 +88,11 @@ frontend/
 - **AuditLogs**: View system audit logs with filtering
 
 ### UI Improvements
-- **Header Component**: App icon (srcev1.ico), clickable navigation links
+- **Header Component**: App icon (srcev1.ico), clickable navigation links, theme toggle
+- **Dark/Light Theme**: Toggle button with localStorage persistence
 - **Enhanced Design**: Fixed rounded corners, better spacing, improved UX
 - **Browser History**: Better back button behavior
+- **Clean URLs**: Client-side routing prevents file path exposure
 
 ## Security Notes
 - **JWT security**: Tokens stored in localStorage with automatic expiration
@@ -94,4 +100,4 @@ frontend/
 - **Input validation**: Client and server-side checks
 - **HTTPS**: Enforced in production
 
-**Last Updated**: 2026-06-28
+**Last Updated**: 2026-07-02
