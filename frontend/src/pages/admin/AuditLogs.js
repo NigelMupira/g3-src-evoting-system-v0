@@ -66,17 +66,25 @@ const AuditLogs = () => {
       setLoading(true);
       setError(null);
 
+      console.log("Fetching audit logs with filters:", filters);
+
       const offset = (page - 1) * logsPerPage;
       const activeFilters = Object.fromEntries(
         Object.entries(filters).filter(([_, value]) => value !== "")
       );
 
+      console.log("Active filters:", activeFilters);
+      console.log("Pagination:", { limit: logsPerPage, offset });
+
       const response = await getAuditLogs(activeFilters, logsPerPage, offset);
+
+      console.log("Audit logs response:", response);
+
       setLogs(response.data || []);
       setTotalLogs(response.pagination?.total || 0);
     } catch (err) {
-      setError("Failed to load audit logs. Please try again.");
       console.error("Error fetching audit logs:", err);
+      setError(`Failed to load audit logs: ${err.message}`);
     } finally {
       setLoading(false);
     }

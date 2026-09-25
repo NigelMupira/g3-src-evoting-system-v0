@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 // ============================================
 // Get Election Details Endpoint
@@ -9,6 +9,7 @@
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../config/database.php';
+$pdo = $GLOBALS['pdo'];
 require_once __DIR__ . '/../../models/Election.php';
 
 use App\Election;

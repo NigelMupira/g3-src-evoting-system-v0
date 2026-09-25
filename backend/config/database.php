@@ -4,7 +4,7 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
-$dotenv->load();
+$dotenv->safeLoad();
 
 // Database connection details
 $db_host = $_ENV['DB_HOST'] ?? 'localhost';
@@ -28,5 +28,6 @@ try {
     exit;
 }
 
+$GLOBALS['pdo'] = $pdo;
 return $pdo;
 ?>

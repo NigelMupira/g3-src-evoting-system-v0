@@ -1,9 +1,10 @@
-<?php
+﻿<?php
 
 // ============================================
 // User Login Endpoint
 
 require_once __DIR__ . '/../../config/database.php';
+$pdo = $GLOBALS['pdo'];
 require_once __DIR__ . '/../../models/User.php';
 require_once __DIR__ . '/../middleware/JWTAuth.php';
 require_once __DIR__ . '/../middleware/RateLimiter.php';

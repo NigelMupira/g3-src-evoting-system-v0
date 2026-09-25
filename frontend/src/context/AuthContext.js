@@ -43,7 +43,14 @@ export const AuthProvider = ({ children }) => {
   // isLoading: True while API calls are in progress
   // error: Error message from authentication attempts
 
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem("user");
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [token, setToken] = useState(localStorage.getItem("token") || null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -52,7 +59,7 @@ export const AuthProvider = ({ children }) => {
   // Login Method
   // ============================================
   // Calls backend API to authenticate user with registration number and password
-  // On success: stores token in localStorage and updates user state
+  // On success: stores token and user object in localStorage and updates state
   // On error: sets error message that can be displayed to user
 
   const login = useCallback(async (regNumber, password) => {
@@ -61,12 +68,17 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await loginUser(regNumber, password);
 
-      // Token is stored by authService, set in context
-      setToken(response.token);
-      setUser(response.user);
+      if (response.token) {
+        localStorage.setItem("token", response.token);
+        setToken(response.token);
+      }
+      if (response.user) {
+        localStorage.setItem("user", JSON.stringify(response.user));
+        setUser(response.user);
+      }
       return { user: response.user, token: response.token };
     } catch (err) {
-      const errorMessage = err.response?.data?.error || err.message || "Login failed";
+      const errorMessage = err.message || "Login failed";
       setError(errorMessage);
       throw err;
     } finally {
@@ -111,6 +123,7 @@ export const AuthProvider = ({ children }) => {
       console.warn("Logout API call failed, clearing local session anyway");
     } finally {
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
       setToken(null);
       setUser(null);
       setError(null);

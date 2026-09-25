@@ -52,15 +52,15 @@ class JWTAuth {
     // Extract JWT token from Authorization header
     // Expected format: "Authorization: Bearer {token}"
     public function getTokenFromHeader() {
-        $headers = getallheaders();
-        $authHeader = $headers['Authorization'] ?? '';
+        $headers = function_exists('getallheaders') ? array_change_key_case(getallheaders() ?: [], CASE_LOWER) : [];
+        $authHeader = $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
 
         if (empty($authHeader)) {
             throw new \Exception("Authorization header is missing");
         }
 
-        $parts = explode(' ', $authHeader);
-        if (count($parts) !== 2 || $parts[0] !== 'Bearer') {
+        $parts = explode(' ', trim($authHeader));
+        if (count($parts) !== 2 || strtolower($parts[0]) !== 'bearer') {
             throw new \Exception("Invalid authorization header format");
         }
 

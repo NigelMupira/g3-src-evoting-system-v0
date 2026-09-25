@@ -34,9 +34,14 @@ const ViewResults = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
+        console.log("Fetching elections...");
         const r = await getAllElections();
+        console.log("Elections response:", r);
         setElections(r.data || []);
         if (r.data?.length) setSelectedElection(r.data[0].id);
+      } catch (e) {
+        console.error("Error fetching elections:", e);
+        setError(e.message);
       } finally {
         setLoading(false);
       }
@@ -51,10 +56,13 @@ const ViewResults = () => {
     if (!selectedElection) return;
     const fetch = async () => {
       try {
+        console.log("Fetching results for election:", selectedElection);
         const r = await getElectionResults(selectedElection);
+        console.log("Results response:", r);
         setResults(r.data || []);
         setStats(r.stats || {});
       } catch (e) {
+        console.error("Error fetching results:", e);
         setError(e.message);
       }
     };
@@ -71,6 +79,12 @@ const ViewResults = () => {
     g[k].totalVotes += r.vote_count || 0;
     return g;
   }, {}));
+
+  // ============================================
+  // Render Loading State
+  // ============================================
+  if (loading) return <Container sx={{ py: 4, textAlign: "center" }}><CircularProgress /></Container>;
+  if (error) return <Container sx={{ py: 4 }}><Alert severity="error">{error}</Alert></Container>;
 
   // ============================================
   // Calculate Statistics
@@ -110,12 +124,6 @@ const ViewResults = () => {
     a.download = `election-results-${selectedElection}.csv`;
     a.click();
   };
-
-  // ============================================
-  // Render Loading State
-  // ============================================
-  if (loading) return <Container sx={{ py: 4, textAlign: "center" }}><CircularProgress /></Container>;
-  if (error) return <Container sx={{ py: 4 }}><Alert severity="error">{error}</Alert></Container>;
 
   // ============================================
   // Render Main Component

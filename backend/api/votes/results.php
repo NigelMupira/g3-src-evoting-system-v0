@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 // ============================================
 // Get Election Results Endpoint
@@ -9,6 +9,7 @@
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../config/database.php';
+$pdo = $GLOBALS['pdo'];
 require_once __DIR__ . '/../../models/Vote.php';
 
 use App\Vote;
@@ -32,8 +33,6 @@ try {
     // ============================================
     // Fetch Results and Statistics
     // ============================================
-    $db = Database::getInstance();
-    $pdo = $db->getConnection();
     $vote = new Vote($pdo);
     $results = $vote->getResults($electionId, $positionId);
     $totalVotes = $vote->getTotalVotes($electionId);

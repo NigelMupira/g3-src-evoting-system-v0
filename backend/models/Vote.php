@@ -50,6 +50,7 @@ class Vote {
                 SELECT
                     c.id,
                     c.name,
+                    c.position_id,
                     p.position_name,
                     COUNT(v.id) as vote_count
                 FROM candidates c

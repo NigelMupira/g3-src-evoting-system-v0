@@ -15,13 +15,31 @@
  *
  * For production on Vercel, set VITE_API_URL to your Railway backend URL.
  */
-const API_BASE_URL = import.meta.env.VITE_API_URL || process.env.REACT_APP_API_URL || "http://localhost:8000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof process !== "undefined" && process.env?.REACT_APP_API_URL) ||
+  "http://localhost:8000";
 
 /**
  * Constructs full URL for API endpoints
  */
 const getFullUrl = (endpoint) => {
-  return `${API_BASE_URL}${endpoint}`;
+  const url = `${API_BASE_URL}${endpoint}`;
+  console.log(`API Request: ${API_BASE_URL}${endpoint}`);
+  return url;
+};
+
+/**
+ * Helper to check if 401 should trigger automatic logout redirect
+ * (Do not redirect on auth attempts like login or register)
+ */
+const handleUnauthorized = (endpoint) => {
+  const isAuthEndpoint = endpoint.includes("/api/auth/login.php") || endpoint.includes("/api/auth/register.php");
+  if (!isAuthEndpoint) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  }
 };
 
 /**
@@ -36,6 +54,9 @@ const getAuthHeaders = () => {
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
+    console.log("Adding Authorization header with token:", token.substring(0, 20) + "...");
+  } else {
+    console.warn("No token found in localStorage");
   }
 
   return headers;
@@ -52,21 +73,24 @@ export const apiGet = async (endpoint) => {
       headers: getAuthHeaders(),
     });
 
+    console.log(`GET ${endpoint} - Status: ${response.status}`);
+
     // If token expired (401), logout user
     if (response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      handleUnauthorized(endpoint);
     }
 
     const data = await response.json();
 
+    console.log(`GET ${endpoint} - Response:`, data);
+
     if (!response.ok) {
-      throw new Error(data.message || "Request failed");
+      throw new Error(data.error || data.message || "Request failed");
     }
 
     return data;
   } catch (error) {
-    console.error("GET request error:", error);
+    console.error(`GET ${endpoint} - Error:`, error);
     throw error;
   }
 };
@@ -83,16 +107,15 @@ export const apiPost = async (endpoint, body) => {
       body: JSON.stringify(body),
     });
 
-    // If token expired (401), logout user
+    // If token expired (401), logout user (except for auth endpoints)
     if (response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      handleUnauthorized(endpoint);
     }
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || "Request failed");
+      throw new Error(data.error || data.message || "Request failed");
     }
 
     return data;
@@ -116,14 +139,13 @@ export const apiPut = async (endpoint, body) => {
 
     // If token expired (401), logout user
     if (response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      handleUnauthorized(endpoint);
     }
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || "Request failed");
+      throw new Error(data.error || data.message || "Request failed");
     }
 
     return data;
@@ -146,14 +168,13 @@ export const apiDelete = async (endpoint) => {
 
     // If token expired (401), logout user
     if (response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+      handleUnauthorized(endpoint);
     }
 
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.message || "Request failed");
+      throw new Error(data.error || data.message || "Request failed");
     }
 
     return data;

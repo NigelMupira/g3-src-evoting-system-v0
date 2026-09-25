@@ -50,18 +50,23 @@ const AdminDashboardHome = ({ onNavigate }) => {
       setLoading(true);
       setError(null);
 
+      console.log("Fetching dashboard data...");
+
       // Fetch statistics and activity in parallel
       const [statsResponse, activityResponse] = await Promise.all([
         getAdminStats(),
         getActivityTimeline(24),
       ]);
 
+      console.log("Stats response:", statsResponse);
+      console.log("Activity response:", activityResponse);
+
       setStats(statsResponse.data);
       setActivities(activityResponse.data?.activities || []);
       setLastUpdated(new Date());
     } catch (err) {
-      setError("Failed to load dashboard data. Please try again.");
       console.error("Error fetching dashboard data:", err);
+      setError(`Failed to load dashboard data: ${err.message}`);
     } finally {
       setLoading(false);
     }

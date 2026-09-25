@@ -13,6 +13,7 @@ import {
   Drawer,
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Grid,
@@ -120,8 +121,7 @@ const UserDashboard = () => {
         {/* Navigation */}
         <List sx={{ flex: 1, pt: 2 }}>
           {navItems.map((item) => (
-            <ListItem
-              button
+            <ListItemButton
               key={item.id}
               onClick={() => handleTabChange(item.id)}
               sx={{
@@ -154,7 +154,7 @@ const UserDashboard = () => {
                   },
                 }}
               />
-            </ListItem>
+            </ListItemButton>
           ))}
         </List>
 

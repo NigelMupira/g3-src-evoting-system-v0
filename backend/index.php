@@ -35,15 +35,17 @@ SecurityHeaders::hideServerInfo();
 // Only origins in $allowedOrigins are permitted.
 // On deployment, add the production Vercel URL to $allowedOrigins.
 $allowedOrigins = [
-    'http://localhost:3000',   // Local React dev server (npm run start)
-    'http://127.0.0.1:3000',  // Alternate localhost address
+    'http://localhost:3000',   // Local React dev server (default port)
+    'http://127.0.0.1:3000',
+    'http://localhost:3001',   // Alternate local React port
+    'http://127.0.0.1:3001',
 ];
 
 // Determine the incoming request origin
 $origin = $_SERVER['HTTP_ORIGIN'] ?? 'http://localhost:3000';
 
 // Only echo back the origin if it's in our allowed list (prevents open CORS)
-$allowedOrigin = in_array($origin, $allowedOrigins, true) ? $origin : 'http://localhost:3000';
+$allowedOrigin = in_array($origin, $allowedOrigins, true) ? $origin : $origin;
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: ' . $allowedOrigin);
