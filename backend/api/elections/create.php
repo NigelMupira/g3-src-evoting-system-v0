@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 // ============================================
 // Create Election Endpoint
@@ -52,10 +52,38 @@ try {
     $election = new Election($pdo);
     $electionId = $election->create($name, $description, $startDate, $endDate, $user->userId);
 
+    // Auto-create positions for this election
+    $defaultPositions = !empty($data['positions']) && is_array($data['positions']) 
+        ? $data['positions'] 
+        : ['President', 'Vice President', 'Secretary General', 'Treasurer'];
+
+    $posStmt = $pdo->prepare("INSERT IGNORE INTO positions (election_id, position_name, max_votes) VALUES (?, ?, 1)");
+    foreach ($defaultPositions as $posName) {
+        $posName = trim($posName);
+        if (!empty($posName)) {
+            $posStmt->execute([$electionId, $posName]);
+        }
+    }
+
+    // Auto-activate if dates encompass current time
+    $now = time();
+    if (strtotime($startDate) <= $now && strtotime($endDate) >= $now) {
+        $pdo->prepare("UPDATE elections SET is_active = TRUE WHERE id = ?")->execute([$electionId]);
+    }
+
+    // Log to audit log
+    $clientIP = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $logStmt = $pdo->prepare("INSERT INTO audit_log (action, user_id, details, ip_address) VALUES ('ELECTION_CREATE', ?, ?, ?)");
+    $logStmt->execute([
+        $user->userId,
+        json_encode(['election_id' => $electionId, 'name' => $name]),
+        $clientIP
+    ]);
+
     http_response_code(201);
     echo json_encode([
         'success' => true,
-        'message' => 'Election created successfully',
+        'message' => 'Election created successfully with positions',
         'data' => [
             'id' => $electionId,
             'name' => $name,

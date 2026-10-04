@@ -133,7 +133,7 @@ const Register = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "#F8F9FA", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", color: "text.primary", display: "flex", flexDirection: "column" }}>
       <Helmet>
         <title>Register - SRC E-Voting System</title>
         <meta name="description" content="Create your account to participate in SRC elections." />
@@ -160,6 +160,8 @@ const Register = () => {
               p: 4,
               boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
               borderRadius: "0.75rem",
+              bgcolor: "background.paper",
+              borderColor: "divider",
             }}
           >
             <Typography
@@ -167,7 +169,7 @@ const Register = () => {
               sx={{
                 fontWeight: 700,
                 mb: 1,
-                color: "#003087",
+                color: "primary.main",
                 textAlign: "center",
               }}
             >
@@ -177,7 +179,7 @@ const Register = () => {
               variant="body2"
               sx={{
                 textAlign: "center",
-                color: "#666666",
+                color: "text.secondary",
                 mb: 3,
               }}
             >
@@ -337,7 +339,7 @@ const Register = () => {
                     sx={{
                       height: 8,
                       borderRadius: "4px",
-                      backgroundColor: "#E0E0E0",
+                      backgroundColor: "action.disabledBackground",
                       "& .MuiLinearProgress-bar": {
                         backgroundColor:
                           passwordStrength <= 2
@@ -349,7 +351,7 @@ const Register = () => {
                       },
                     }}
                   />
-                  <Typography variant="caption" sx={{ mt: 1, display: "block", color: "#666666" }}>
+                  <Typography variant="caption" sx={{ mt: 1, display: "block", color: "text.secondary" }}>
                     Strength:{" "}
                     {passwordStrength <= 2
                       ? "Weak"
@@ -382,6 +384,7 @@ const Register = () => {
                 fullWidth
                 variant="contained"
                 size="large"
+                color="primary"
                 onClick={handleSubmit}
                 disabled={isLoading}
                 sx={{
@@ -392,10 +395,6 @@ const Register = () => {
                   borderRadius: "0.5rem",
                   mt: 3,
                   mb: 2,
-                  background: isLoading ? "#999999" : "#003087",
-                  "&:hover": {
-                    background: isLoading ? "#999999" : "#0052CC",
-                  },
                 }}
               >
                 {isLoading ? (
@@ -412,7 +411,7 @@ const Register = () => {
                 variant="body2"
                 sx={{
                   textAlign: "center",
-                  color: "#666666",
+                  color: "text.secondary",
                 }}
               >
                 Already have an account?{" "}
@@ -420,7 +419,7 @@ const Register = () => {
                   component="span"
                   onClick={() => navigate("/login")}
                   sx={{
-                    color: "#D4A017",
+                    color: "secondary.main",
                     fontWeight: 600,
                     cursor: "pointer",
                     "&:hover": { textDecoration: "underline" },

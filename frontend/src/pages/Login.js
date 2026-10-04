@@ -31,7 +31,7 @@ import ThemeToggle from "../components/common/ThemeToggle";
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading, error, isAuthenticated, user } = useAuth();
 
   const [formData, setFormData] = useState({
     regNumber: "",
@@ -41,6 +41,15 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [localError, setLocalError] = useState("");
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const defaultPath = user.role === "admin" ? "/admin" : "/dashboard";
+      const from = location.state?.from?.pathname || defaultPath;
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate, location]);
 
   useEffect(() => {
     const savedRegNumber = localStorage.getItem("savedRegNumber");
@@ -103,7 +112,7 @@ const Login = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "#F8F9FA", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "background.default", color: "text.primary", display: "flex", flexDirection: "column" }}>
       <Helmet>
         <title>Login - SRC E-Voting System</title>
         <meta name="description" content="Login to the SRC E-Voting System to cast your vote." />
@@ -130,6 +139,8 @@ const Login = () => {
               p: 4,
               boxShadow: "0 8px 24px rgba(0, 0, 0, 0.08)",
               borderRadius: "0.75rem",
+              bgcolor: "background.paper",
+              borderColor: "divider",
             }}
           >
             <Typography
@@ -137,7 +148,7 @@ const Login = () => {
               sx={{
                 fontWeight: 700,
                 mb: 1,
-                color: "#003087",
+                color: "primary.main",
                 textAlign: "center",
               }}
             >
@@ -147,7 +158,7 @@ const Login = () => {
               variant="body2"
               sx={{
                 textAlign: "center",
-                color: "#666666",
+                color: "text.secondary",
                 mb: 3,
               }}
             >
@@ -228,6 +239,7 @@ const Login = () => {
                 fullWidth
                 variant="contained"
                 size="large"
+                color="primary"
                 onClick={handleSubmit}
                 disabled={isLoading}
                 sx={{
@@ -237,10 +249,6 @@ const Login = () => {
                   textTransform: "none",
                   borderRadius: "0.5rem",
                   mb: 2,
-                  background: isLoading ? "#999999" : "#003087",
-                  "&:hover": {
-                    background: isLoading ? "#999999" : "#0052CC",
-                  },
                 }}
               >
                 {isLoading ? (
@@ -257,7 +265,7 @@ const Login = () => {
                 variant="body2"
                 sx={{
                   textAlign: "center",
-                  color: "#666666",
+                  color: "text.secondary",
                   mb: 1,
                 }}
               >
@@ -265,7 +273,7 @@ const Login = () => {
                 <Link
                   onClick={() => navigate("/register")}
                   sx={{
-                    color: "#D4A017",
+                    color: "secondary.main",
                     fontWeight: 600,
                     cursor: "pointer",
                     textDecoration: "none",
@@ -281,7 +289,7 @@ const Login = () => {
                 sx={{
                   display: "block",
                   textAlign: "center",
-                  color: "#999999",
+                  color: "text.secondary",
                   mt: 2,
                 }}
               >

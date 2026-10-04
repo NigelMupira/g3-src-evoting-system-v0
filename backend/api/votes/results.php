@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 // ============================================
 // Get Election Results Endpoint

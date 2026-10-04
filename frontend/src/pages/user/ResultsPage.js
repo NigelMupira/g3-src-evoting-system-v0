@@ -112,14 +112,7 @@ const ResultsPage = () => {
   const positions = Object.values(groupedByPosition);
 
   // ============================================
-  // Calculate Stats
-  // ============================================
-  const totalVotes = stats.totalVotes || 0;
-  const uniqueVoters = stats.uniqueVoters || 0;
-  const turnout = uniqueVoters > 0 ? ((totalVotes / (uniqueVoters * positions.length)) * 100).toFixed(1) : 0;
-
-  // ============================================
-  // Render
+  // Render Loading / Empty States
   // ============================================
   if (loading && elections.length === 0) {
     return (
@@ -145,6 +138,15 @@ const ResultsPage = () => {
       </Container>
     );
   }
+
+  // ============================================
+  // Calculate Stats
+  // ============================================
+  const totalVotes = stats?.totalVotes || 0;
+  const uniqueVoters = stats?.uniqueVoters || 0;
+  const turnout = uniqueVoters > 0 && positions.length > 0 
+    ? ((totalVotes / (uniqueVoters * positions.length)) * 100).toFixed(1) 
+    : 0;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -229,11 +231,15 @@ const ResultsPage = () => {
         <Box sx={{ textAlign: "center" }}>
           <CircularProgress />
         </Box>
+      ) : positions.length === 0 ? (
+        <Alert severity="info" sx={{ mb: 3 }}>No positions or candidates registered for this election yet.</Alert>
       ) : (
         positions.map((position, idx) => {
-          const winner = position.candidates.reduce((prev, current) =>
-            (prev.vote_count || 0) > (current.vote_count || 0) ? prev : current
-          );
+          const winner = position.candidates.length > 0
+            ? position.candidates.reduce((prev, current) =>
+                (prev.vote_count || 0) > (current.vote_count || 0) ? prev : current
+              )
+            : { name: "No candidates", vote_count: 0 };
 
           return (
             <Card key={idx} sx={{ mb: 3, borderRadius: "0.75rem", border: "1px solid #E0E0E0", overflow: "hidden" }}>
@@ -316,10 +322,12 @@ const ResultsPage = () => {
               </TableHead>
               <TableBody>
                 {positions.map((position) => {
-                  const winner = position.candidates.reduce((prev, current) =>
-                    (prev.vote_count || 0) > (current.vote_count || 0) ? prev : current
-                  );
-                  const percentage = position.totalVotes > 0 ? ((winner.vote_count / position.totalVotes) * 100).toFixed(1) : 0;
+                  const winner = position.candidates.length > 0
+                    ? position.candidates.reduce((prev, current) =>
+                        (prev.vote_count || 0) > (current.vote_count || 0) ? prev : current
+                      )
+                    : { name: "No candidates", vote_count: 0 };
+                  const percentage = position.totalVotes > 0 && winner.vote_count ? ((winner.vote_count / position.totalVotes) * 100).toFixed(1) : 0;
 
                   return (
                     <TableRow key={position.positionId}>

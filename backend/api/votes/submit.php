@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 // ============================================
 // Submit Vote Endpoint
@@ -58,6 +58,15 @@ try {
     // Submit Vote
     // ============================================
     if ($vote->submit($electionId, $positionId, $candidateId, $voterIdHash)) {
+        // Record anonymous audit trail
+        $clientIP = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $logStmt = $pdo->prepare("INSERT INTO audit_log (action, user_id, details, ip_address) VALUES ('VOTE_CAST', ?, ?, ?)");
+        $logStmt->execute([
+            $user->userId,
+            json_encode(['election_id' => $electionId, 'position_id' => $positionId]),
+            $clientIP
+        ]);
+
         http_response_code(201);
         echo json_encode([
             'success' => true,

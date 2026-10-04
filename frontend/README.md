@@ -1,103 +1,88 @@
-# Frontend - React E-Voting System
+# Frontend - SRC E-Voting System (React + Vite)
 
 ## Architecture
-React 19+ frontend with Material-UI, integrated with PHP backend API. Features JWT-based authentication, role-based routing, and comprehensive admin/user interfaces.
+
+React 19 single-page application built with Vite and Material-UI (MUI v6). Communicates with the PHP REST backend via a centralized Axios/Fetch API client layer (`api.js`).
 
 ## Directory Structure
+
 ```
 frontend/
 ├── src/
-│   ├── pages/                # Page components
-│   │   ├── Home.js          # Landing page
-│   │   ├── Login.js         # Authentication with admin routing
-│   │   ├── Register.js      # User registration
+│   ├── pages/                # Page views
+│   │   ├── Home.js           # Dynamic landing page (fetches active elections)
+│   │   ├── Login.js          # Authentication with role-based routing
+│   │   ├── Register.js       # Student voter account creation
 │   │   ├── user/
-│   │   │   ├── UserDashboard.js    # User home dashboard
-│   │   │   ├── UserDashboardHome.js # Enhanced user dashboard with history
-│   │   │   ├── VotingPage.js       # Cast votes interface
-│   │   │   └── ResultsPage.js      # View election results
+│   │   │   ├── UserDashboard.js     # Voter layout with sidebar & URL tab state
+│   │   │   ├── UserDashboardHome.js # Voter summary, stats & participation
+│   │   │   ├── VotingPage.js        # Cast vote interface per position
+│   │   │   └── ResultsPage.js       # Real-time election turnout & candidate counts
 │   │   └── admin/
-│   │       ├── AdminDashboard.js        # Admin overview
-│   │       ├── AdminDashboardHome.js   # Enhanced admin dashboard with stats
-│   │       ├── ManageElections.js       # Election CRUD
-│   │       ├── ManageCandidates.js      # Candidate management
-│   │       ├── ViewResults.js           # Admin results view
-│   │       └── AuditLogs.js             # Audit log viewer
-│   ├── components/          # Reusable UI components
+│   │       ├── AdminDashboard.js     # Admin layout with URL tab state
+│   │       ├── AdminDashboardHome.js # Real-time election metrics & system health
+│   │       ├── ManageElections.js    # Create/edit/delete elections
+│   │       ├── ManageCandidates.js   # Manage candidates with position dropdown
+│   │       ├── ViewResults.js        # Detailed vote analytics & chart statistics
+│   │       └── AuditLogs.js          # System security audit log viewer
+│   ├── components/           # Reusable UI components
 │   │   └── common/
-│   │       ├── Header.js               # Enhanced header with icon and navigation
-│   │       └── ThemeToggle.js          # Dark/light theme toggle button
-│   ├── context/             # Global state
-│   │   ├── AuthContext.js              # Authentication and user role management
-│   │   └── ThemeContext.js            # Theme management (dark/light mode)
-│   ├── services/            # API service layer
-│   │   ├── api.js          # Centralized HTTP client
-│   │   ├── authService.js  # Login, register, logout
-│   │   ├── electionService.js # Election CRUD
-│   │   ├── voteService.js  # Voting and results
-│   │   └── auditService.js # Audit log access
-│   ├── theme/              # Material-UI custom theme (light + dark)
-│   ├── App.js             # Root app with routing
-│   └── index.js           # App entry point
-├── public/                # Static assets
-│   └── srcev1.ico         # App icon
-├── index.html            # Vite HTML entry
-├── vite.config.js        # Vite configuration
-├── .env.example          # Environment variables template
-└── package.json
+│   │       ├── Header.js            # Main navigation header with theme toggle
+│   │       └── ThemeToggle.js       # Dark/light theme mode button
+│   ├── context/              # Context Providers
+│   │   ├── AuthContext.js           # Auth state, login/logout, JWT token storage
+│   │   └── ThemeContext.js          # Theme mode (light/dark) with localStorage sync
+│   ├── services/             # API Service layer
+│   │   ├── api.js               # Centralized HTTP client
+│   │   ├── authService.js       # Authentication requests
+│   │   ├── electionService.js   # Election API calls
+│   │   ├── voteService.js       # Vote submission & history API calls
+│   │   └── auditService.js      # Audit log API calls
+│   ├── theme/               # Material-UI Theme Definition
+│   │   └── theme.js             # Light & Dark color palettes & MUI component overrides
+│   ├── App.js                # App router and routes definition
+│   └── index.js              # Application entry point
+├── vercel.json               # Vercel SPA routing rewrite rules & security headers
+├── vite.config.js            # Vite build configuration
+├── package.json              # NPM dependencies & build scripts
+└── README.md                 # Frontend documentation
 ```
 
-## Setup
+## Setup & Running
 
-### Prerequisites
-- Node.js 18+ and npm 9+
+### 1. Install Dependencies
 
-### Steps
-1. **Install dependencies**:  
-   ```bash  
-   cd frontend  
-   npm install  
-   ```  
-2. **Create environment file**:  
-   ```env  
-   VITE_API_URL=http://localhost:8000  
-   ```  
-3. **Start server**:  
-   ```bash  
-   npm start  
-   ```  
+```bash
+cd frontend
+npm install
+```
 
-## Key Components
+### 2. Configure Environment
 
-### Authentication
-- **AuthContext**: Manages JWT tokens and user role (admin/student)
-- **ThemeContext**: Manages dark/light theme preference with localStorage persistence
-- **api.js**: Centralized HTTP client with automatic token handling
-- **authService.js**: Login, register, logout logic
+Create `.env` in `frontend/`:
+```env
+VITE_API_URL=http://localhost:8000
+```
 
-### User Features
-- **UserDashboardHome**: Enhanced dashboard with voting history and participation tracking
-- **VotingPage**: Select candidates per position and submit votes
-- **ResultsPage**: View real-time election results
+### 3. Development Server
 
-### Admin Features
-- **AdminDashboardHome**: Real-time statistics and activity feed
-- **ManageElections**: Create/edit/delete elections
-- **ManageCandidates**: Add/edit candidates for elections
-- **ViewResults**: Detailed results with analytics and export
-- **AuditLogs**: View system audit logs with filtering
+```bash
+npm run start
+```
+Vite will start the dev server at `http://localhost:3000`.
 
-### UI Improvements
-- **Header Component**: App icon (srcev1.ico), clickable navigation links, theme toggle
-- **Dark/Light Theme**: Toggle button with localStorage persistence
-- **Enhanced Design**: Fixed rounded corners, better spacing, improved UX
-- **Browser History**: Better back button behavior
-- **Clean URLs**: Client-side routing prevents file path exposure
+### 4. Build for Production
 
-## Security Notes
-- **JWT security**: Tokens stored in localStorage with automatic expiration
-- **CORS**: Restricted to known origins
-- **Input validation**: Client and server-side checks
-- **HTTPS**: Enforced in production
+```bash
+npm run build
+```
+Generates production assets in `frontend/dist/`.
 
-**Last Updated**: 2026-07-02
+## Key Highlights & Improvements
+
+1. **Full Light/Dark Theme Engine**: `ThemeContext.js` applies custom MUI palettes (`lightTheme` and `darkTheme`). Components use theme tokens (`bgcolor: 'background.default'`, `bgcolor: 'background.paper'`, `color: 'text.primary'`, `borderColor: 'divider'`) ensuring sleek dark mode rendering without stark white or harsh contrast boxes.
+2. **Browser History & URL Sync**: Both `UserDashboard.js` and `AdminDashboard.js` use `useSearchParams` (`?tab=Results`, `?tab=Vote`, etc.) so clicking browser back/forward buttons navigates between tabs smoothly without logging out or redirecting.
+3. **Dynamic Landing Page**: `Home.js` queries `electionService.getActiveElections()` on load to display real election dates, election titles, and timeline progress.
+4. **Vercel SPA Compatibility**: Includes `vercel.json` with rewrites sending all routes to `/index.html` to prevent 404 errors on deep URL reloads.
+
+**Last Updated**: 2026-10-05

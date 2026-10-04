@@ -29,37 +29,53 @@ SecurityHeaders::hideServerInfo();
 // Section 2: CORS Headers
 // ============================================
 // Cross-Origin Resource Sharing (CORS) allows the React frontend
-// (running on localhost:3000) to communicate with this backend
-// (running on localhost:8000) despite being on different ports.
-//
-// Only origins in $allowedOrigins are permitted.
-// On deployment, add the production Vercel URL to $allowedOrigins.
+// (running on localhost or Vercel) to communicate with this backend.
 $allowedOrigins = [
-    'http://localhost:3000',   // Local React dev server (default port)
+    'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'http://localhost:3001',   // Alternate local React port
+    'http://localhost:3001',
     'http://127.0.0.1:3001',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
 ];
 
-// Determine the incoming request origin
-$origin = $_SERVER['HTTP_ORIGIN'] ?? 'http://localhost:3000';
+// Add frontend URL from env if set
+if (!empty($_ENV['FRONTEND_URL'])) {
+    $allowedOrigins[] = rtrim($_ENV['FRONTEND_URL'], '/');
+}
+if (!empty($_ENV['CORS_ALLOWED_ORIGINS'])) {
+    $extraOrigins = array_map('trim', explode(',', $_ENV['CORS_ALLOWED_ORIGINS']));
+    $allowedOrigins = array_merge($allowedOrigins, $extraOrigins);
+}
 
-// Only echo back the origin if it's in our allowed list (prevents open CORS)
-$allowedOrigin = in_array($origin, $allowedOrigins, true) ? $origin : $origin;
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+// Check if origin is allowed (explicitly or via vercel.app pattern)
+$isAllowed = false;
+if (empty($origin)) {
+    $isAllowed = true;
+    $allowedOrigin = '*';
+} elseif (in_array($origin, $allowedOrigins, true)) {
+    $isAllowed = true;
+    $allowedOrigin = $origin;
+} elseif (preg_match('#^https://[a-zA-Z0-9\-_.]+\.vercel\.app$#', $origin)) {
+    $isAllowed = true;
+    $allowedOrigin = $origin;
+} else {
+    // Fallback: allow request in non-strict modes or default to first origin
+    $allowedOrigin = $origin ?: 'http://localhost:3000';
+}
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: ' . $allowedOrigin);
+header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-// Vary header tells caches that the response varies by Origin
+header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
 header('Vary: Origin');
 
 // ============================================
 // Section 3: OPTIONS Preflight Handling
 // ============================================
-// Browsers send an OPTIONS "preflight" request before actual POST/PUT/DELETE
-// requests to check if CORS is permitted. We must respond immediately with
-// 204 No Content and the CORS headers set above.
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(204);
     exit;

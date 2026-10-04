@@ -7,6 +7,15 @@
 import { apiGet, apiPost, apiPut, apiDelete } from "./api";
 
 // ============================================
+// Positions Management
+// ============================================
+
+// Get all positions for an election
+export const getPositions = async (electionId) => {
+  return apiGet(`/api/positions/list.php?election_id=${electionId}`);
+};
+
+// ============================================
 // Candidate Management
 // ============================================
 

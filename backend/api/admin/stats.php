@@ -68,7 +68,8 @@ try {
         ]
     ]);
 } catch (\Exception $e) {
-    http_response_code(500);
+    $code = str_contains($e->getMessage(), 'Authorization') || str_contains($e->getMessage(), 'token') ? 401 : 500;
+    http_response_code($code);
     echo json_encode([
         'success' => false,
         'error' => 'Failed to fetch statistics: ' . $e->getMessage()

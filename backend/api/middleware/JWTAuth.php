@@ -14,9 +14,9 @@ class JWTAuth {
     private $secretKey;
     private $tokenExpiry;
 
-    public function __construct($secretKey, $tokenExpiry = 900) {
+    public function __construct($secretKey, $tokenExpiry = null) {
         $this->secretKey = $secretKey;
-        $this->tokenExpiry = $tokenExpiry;
+        $this->tokenExpiry = $tokenExpiry ?? intval($_ENV['JWT_EXPIRY'] ?? 86400);
     }
 
     // Create JWT token with user claims (userId, regNumber, role)

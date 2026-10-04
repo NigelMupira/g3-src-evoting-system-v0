@@ -1,144 +1,58 @@
-# Database - SRC E-Voting System
+# Database - SRC E-Voting System (MySQL)
 
 ## Overview
-MySQL 8.0+ database with 8 tables managing users, elections, candidates, votes, and security features. Includes automated setup scripts and comprehensive schema with referential integrity.
+
+Relational MySQL 8.0+ database schema supporting secure election management, vote anonymization, referential integrity, and administrative audit logging.
 
 ## Directory Structure
+
 ```
 database/
 ├── schemas/
-│   └── schema.sql           # Complete table definitions with security tables
-├── migrations/              # Version-controlled schema changes
+│   └── schema.sql           # Complete table definitions (8 tables)
 ├── seeds/
-│   └── create_admin.sql     # Default admin user creation script
-├── setup.bat                # Windows automated setup
-├── setup.sh                 # Linux/macOS automated setup
-└── README.md                # This file
+│   ├── seed_demo_data.php   # Complete PHP demo data seeder
+│   └── create_admin.sql     # SQL script for standalone admin user creation
+├── setup.bat                # Windows interactive setup script
+├── setup.sh                 # Linux/macOS setup script
+└── README.md                # Database documentation
 ```
 
-## Setup
+## Tables Overview
 
-### Prerequisites
-- MySQL 5.7+ or 8.0+
-- MySQL client (`mysql` command)
-- Administrative MySQL user (root or equivalent)
+### Core Application Tables (5)
+1. `users` - Stores student voters and administrators with bcrypt-hashed passwords.
+2. `elections` - Manages election events, active flags, and start/end timestamps.
+3. `positions` - Positions tied to elections (e.g., President, Vice President, Treasurer, General Secretary).
+4. `candidates` - Candidate profiles, manifestos, school affiliations, and image URLs.
+5. `votes` - Anonymized votes with SHA-256 voter hashes (`voter_id_hash`).
 
-### Option 1: Automated Setup (Recommended)
+### Security & Audit Tables (3)
+6. `audit_log` - System audit log tracking logins, candidate additions, election updates, and admin actions.
+7. `rate_limits` - Endpoint IP rate limiting entries.
+8. `token_blacklist` - Expired or invalidated JWT token tracking.
 
-**Windows:**
-```bash
-cd database
-setup.bat
-```
+## Seeding Demo Data
 
-**Linux/macOS:**
-```bash
-cd database
-chmod +x setup.sh
-./setup.sh
-```
-
-The automated setup scripts:
-- Create the database and user
-- Import the schema
-- Create the default admin user
-- Display admin credentials upon completion
-- Use secure environment variables to avoid password warnings
-
-### Option 2: Manual Setup
+Run the PHP seeder script to populate the database with realistic demo data:
 
 ```bash
-# Create database
-mysql -u root -p
-```
-```sql
-CREATE DATABASE evoting_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-exit
+php database/seeds/seed_demo_data.php
 ```
 
-```bash
-# Import schema
-mysql -u root -p evoting_system < schemas/schema.sql
+This populates:
+- **Default Admin Account**: `A999999Z` / `#adm!n@sup3r`
+- **Default Voter Account**: `H230828V` / `Student@123`
+- **Active Election**: "SRC General Elections 2026"
+- **4 Key Positions**: President, Vice President, Treasurer, General Secretary
+- **8 Candidates**: Complete with manifestos and school affiliations
+- **112 Anonymized Votes**: Distributed across candidates for live result analytics
+- **5 Audit Log Entries**: Demonstrating administrative activity logs
 
-# Create default admin user (Windows CMD)
-type seeds/create_admin.sql | mysql -u root -p evoting_system
+## Vote Anonymity & Integrity
 
-# Create default admin user (Windows PowerShell)
-Get-Content seeds/create_admin.sql | mysql -u root -p evoting_system
+- **SHA-256 Voter Hashing**: `voter_id_hash = SHA256(regNumber + positionId + electionId)`. This prevents mapping a specific vote back to a student registration number.
+- **Unique Constraint**: `UNIQUE KEY (voter_id_hash, position_id, election_id)` prevents double-voting at the database level.
+- **Foreign Keys & Cascade Deletes**: Deleting an election automatically cleans up associated positions, candidates, and votes.
 
-# Create default admin user (Linux/macOS)
-cat seeds/create_admin.sql | mysql -u root -p evoting_system
-```
-
-## Schema Overview
-
-### Core Tables (5)
-- **users**: Student/admin accounts with bcrypt password hashing
-- **elections**: Election events with activation control
-- **positions**: Positions within elections (President, VP, etc.)
-- **candidates**: Candidates with bios, manifestos, and media
-- **votes**: Anonymized votes using SHA-256 voter ID hashing
-
-### Security Tables (3)
-- **audit_log**: Tracks all admin actions with timestamps and IP addresses
-- **rate_limits**: API rate limiting for brute force protection
-- **token_blacklist**: Session management and token revocation
-
-## Key Features
-
-### Vote Integrity
-- **Anonymity**: Voter IDs hashed with SHA-256(regNumber + positionId)
-- **Double voting prevention**: UNIQUE constraint on (voter_id_hash, position_id, election_id)
-- **Cascade deletes**: Deleting elections removes related data automatically
-
-### Security
-- **Password security**: bcrypt hashing with salt
-- **Audit trail**: All admin actions logged
-- **Rate limiting**: Prevents API abuse
-- **Token management**: Secure session revocation
-
-## Default Admin User
-
-The setup scripts automatically create a default admin user:
-- **Registration**: A999999Z
-- **Password**: #adm!n@sup3r
-- **Role**: admin
-
-**Important**: Change this password in production.
-
-To manually recreate the admin user:
-```bash
-# Windows CMD
-type seeds/create_admin.sql | mysql -u your_user -p evoting_system
-
-# Windows PowerShell
-Get-Content seeds/create_admin.sql | mysql -u your_user -p evoting_system
-
-# Linux/macOS
-cat seeds/create_admin.sql | mysql -u your_user -p evoting_system
-```
-
-## Backup & Restore
-
-```bash
-# Backup
-mysqldump -u root -p evoting_system > backup.sql
-
-# Restore
-mysql -u root -p evoting_system < backup.sql
-```
-
-## Maintenance
-
-```sql
--- Clean old audit logs (30 days)
-DELETE FROM audit_log WHERE timestamp < DATE_SUB(NOW(), INTERVAL 30 DAY);
-
--- Clean old rate limits (1 day)
-DELETE FROM rate_limits WHERE timestamp < DATE_SUB(NOW(), INTERVAL 1 DAY);
-
--- Clean expired tokens
-DELETE FROM token_blacklist WHERE expires_at < NOW();
-```
-
-**Last Updated**: 2026-07-02
+**Last Updated**: 2026-10-05

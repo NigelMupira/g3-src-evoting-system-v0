@@ -31,7 +31,7 @@ import {
   Settings,
   Security,
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/common/Header";
 import ThemeToggle from "../../components/common/ThemeToggle";
@@ -44,7 +44,8 @@ import AdminDashboardHome from "./AdminDashboardHome";
 const drawerWidth = 260;
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get("tab") || "Dashboard";
   const navigate = useNavigate();
   const { logout, user } = useAuth();
 
@@ -53,29 +54,15 @@ const AdminDashboard = () => {
     navigate("/login");
   };
 
-  // Handle tab changes with browser history
+  // Handle tab changes with standard browser history
   const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    // Update URL without full page reload for better back button behavior
-    window.history.replaceState({ tab: tabId }, '', `?tab=${tabId}`);
+    setSearchParams({ tab: tabId });
   };
-
-  // Handle browser back button
-  React.useEffect(() => {
-    const handlePopState = (event) => {
-      if (event.state && event.state.tab) {
-        setActiveTab(event.state.tab);
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
       case "Dashboard":
-        return <AdminDashboardHome onNavigate={setActiveTab} />;
+        return <AdminDashboardHome onNavigate={handleTabChange} />;
       case "ManageElections":
         return <ManageElections />;
       case "ManageCandidates":
@@ -98,7 +85,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "#F8F9FA" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default", color: "text.primary" }}>
       {/* Sidebar */}
       <Drawer
         variant="permanent"
@@ -108,8 +95,8 @@ const AdminDashboard = () => {
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
-            backgroundColor: "white",
-            borderRight: "1px solid #E0E0E0",
+            bgcolor: "background.paper",
+            borderColor: "divider",
             display: "flex",
             flexDirection: "column",
           },
@@ -123,7 +110,7 @@ const AdminDashboard = () => {
             color: "white",
             cursor: "pointer",
           }}
-          onClick={() => setActiveTab("Dashboard")}
+          onClick={() => handleTabChange("Dashboard")}
         >
           <Typography variant="h6" sx={{ fontWeight: 700, letterSpacing: "0.5px" }}>
             Admin Panel
@@ -142,17 +129,17 @@ const AdminDashboard = () => {
                 borderRadius: "0.5rem",
                 backgroundColor:
                   activeTab === item.id
-                    ? "rgba(0, 48, 135, 0.1)"
+                    ? "action.selected"
                     : "transparent",
-                color: activeTab === item.id ? "#003087" : "#666666",
+                color: activeTab === item.id ? "primary.main" : "text.secondary",
                 "&:hover": {
-                  backgroundColor: "rgba(0, 48, 135, 0.05)",
+                  backgroundColor: "action.hover",
                 },
               }}
             >
               <ListItemIcon
                 sx={{
-                  color: activeTab === item.id ? "#003087" : "#666666",
+                  color: activeTab === item.id ? "primary.main" : "text.secondary",
                   minWidth: 40,
                 }}
               >
@@ -171,13 +158,13 @@ const AdminDashboard = () => {
         </List>
 
         {/* Logout Section */}
-        <Box sx={{ p: 2, borderTop: "1px solid #E0E0E0" }}>
+        <Box sx={{ p: 2, borderTop: 1, borderColor: "divider" }}>
           <Button
             fullWidth
             startIcon={<LogoutRounded />}
             onClick={handleLogout}
             sx={{
-              color: "#EF4444",
+              color: "error.main",
               textTransform: "none",
               justifyContent: "flex-start",
               "&:hover": { backgroundColor: "rgba(239, 68, 68, 0.05)" },
@@ -196,7 +183,7 @@ const AdminDashboard = () => {
         <Header 
           title="SRC E-Voting" 
           showHomeButton={false}
-          navigateTo={() => setActiveTab("Dashboard")}
+          navigateTo={() => handleTabChange("Dashboard")}
         />
 
         <Box

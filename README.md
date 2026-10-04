@@ -1,6 +1,6 @@
 # SRC E-Voting System
 
-A secure, web-based election management platform for Student Representative Council (SRC) voting. Built with React, PHP, and MySQL, this system enables transparent and fair elections while ensuring voter privacy and vote integrity.
+A secure, web-based election management platform for Student Representative Council (SRC) voting. Built with React, PHP, and MySQL, this system enables transparent and fair elections while ensuring voter privacy, vote integrity, and real-time auditability.
 
 ## Table of Contents
 
@@ -8,6 +8,7 @@ A secure, web-based election management platform for Student Representative Coun
 - [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
 - [Quick Start](#quick-start)
+- [Demo Credentials](#demo-credentials)
 - [Architecture](#architecture)
 - [Configuration](#configuration)
 - [Security](#security)
@@ -21,43 +22,24 @@ A secure, web-based election management platform for Student Representative Coun
 
 ### For Voters
 
-- **User Registration**: Create account with validation (registration number, password strength)
-- **Secure Login**: JWT-based authentication with rate limiting
-- **Vote Casting**: Select candidates per position in active elections
-- **Vote Privacy**: Votes are anonymous and cannot be traced back to voters
-- **Results Viewing**: View real-time election results with detailed analytics
-- **Candidate Info**: Access candidate profiles with bios and manifestos
-- **Voting History**: Track participation in elections
-- **Dark/Light Theme**: Toggle between dark and light themes for comfortable viewing
+- **User Registration**: Create voter account with strict client & server-side validation (registration number, school, course, password complexity).
+- **Secure Login**: JWT-based authentication with rate limiting and automatic session management.
+- **Dynamic Home Page**: Displays live active elections fetched from the database with automated fallbacks.
+- **Vote Casting**: Select candidates per position in active elections with immediate feedback and double-voting prevention.
+- **Vote Privacy**: Votes are anonymous and cannot be traced back to individual voters (SHA-256 voter hash).
+- **Results & Analytics**: View real-time election results, turnout progress, candidate standings, and statistical charts.
+- **Voting History**: Track all previous voting activity and participation rates.
+- **Full Light/Dark Theme**: Toggle between light and dark themes with persistent localStorage preference and complete Material-UI token integration.
 
 ### For Administrators
 
-- **Election Management**: Create, edit, activate, and close elections
-- **Candidate Management**: Add, edit, and manage candidates with media
-- **Real-time Monitoring**: View live voting statistics and participation rates
-- **Results Analytics**: Generate reports and visualize results with charts
-- **Audit Logging**: Track all system activities and admin actions
-- **Enhanced Dashboard**: Comprehensive admin interface with activity feeds
-- **Activity Timeline**: View recent system activities and user actions
-- **Admin Statistics**: Real-time metrics on users, elections, and votes
+- **Election Management**: Create, edit, activate, and close elections (automatically seeds default positions upon creation).
+- **Candidate Management**: Add, edit, and delete candidates with position dropdown selection and media URLs.
+- **Real-time Monitoring**: Monitor live turnout percentages, vote totals, and candidate leaderboards.
+- **Audit Logging**: Comprehensive activity logs tracking logins, registration, vote submissions, and admin modifications.
+- **Admin Statistics**: Instant overview metrics on registered voters, total elections, votes cast, and active positions.
 
-> **Note on Admin Accounts**: Admins are **not** registered through the public registration page.
-> They are added directly to the `users` table in the database by a superuser/initial admin
-> with `role = 'admin'`. They then log in via the same login page as voters, and the system
-> automatically detects their role from the database and redirects them to `/admin`.
-
-### Security Features
-
-- **Password Security**: Passwords hashed with bcrypt on backend
-- **Authentication**: JWT tokens with 15-minute expiry
-- **Rate Limiting**: Brute force protection on sensitive endpoints
-- **Input Validation**: Comprehensive client and server-side validation
-- **Security Headers**: OWASP-compliant headers (CSP, HSTS, XSS protection)
-- **Vote Privacy**: Voter IDs hashed (SHA-256); votes are anonymous
-- **Double Voting Prevention**: Backend enforces one vote per position per voter
-- **Audit Trail**: All admin actions logged for accountability
-- **Token Blacklisting**: Secure session management and revocation
-- **Clean URLs**: Client-side routing prevents file path exposure
+> **Note on Admin Accounts**: Admins log in via the standard login page (`/login`). Their role (`admin`) is stored securely in the database, and the system automatically routes them to the `/admin` panel upon login.
 
 ---
 
@@ -66,22 +48,22 @@ A secure, web-based election management platform for Student Representative Coun
 ### Frontend
 
 - **React** `^19.0.0` - UI framework
-- **Vite** `^5.4.11` - Build tool (replaced Create React App for React 19 compatibility)
-- **React Router DOM** `^7.3.0` - Client-side routing
-- **Material-UI (MUI)** `^6.4.6` - Component library & icons
-- **React Helmet Async** `^3.0.0` - Document head management (SEO)
+- **Vite** `^5.4.11` - Ultra-fast build tool and development server
+- **React Router DOM** `^7.3.0` - SPA client-side routing with URL tab synchronization
+- **Material-UI (MUI)** `^6.4.6` - Component library & theme engine (light + dark mode)
+- **React Helmet Async** `^3.0.0` - SEO head management
 
 ### Backend
 
-- **PHP** `8.0+` - Server-side logic with RESTful API
-- **MySQL** `8.0+` - 8-table relational database (core + security)
-- **firebase/php-jwt** `^6.8` - JWT token generation/validation
-- **vlucas/phpdotenv** `^5.5` - `.env` file loading
+- **PHP** `8.0+` - RESTful API micro-services
+- **MySQL** `8.0+` - Relational database schema with referential constraints & security tables
+- **firebase/php-jwt** `^6.8` - JWT token creation and validation
+- **vlucas/phpdotenv** `^5.5` - Environment variable configuration
 
-### Hosting (Target)
+### Production Hosting
 
-- **Frontend**: Vercel (free tier) - React app deployment
-- **Backend + Database**: Railway.app (free tier, $5/month credit) - PHP + MySQL
+- **Frontend**: Vercel (SPA rewrite rules & security headers via `vercel.json`)
+- **Backend & DB**: Railway.app (Dynamic `$PORT` binding via `railway.json` + automatic Railway MySQL environment detection)
 
 ---
 
@@ -91,105 +73,63 @@ A secure, web-based election management platform for Student Representative Coun
 g3-src-evoting-system/
 ├── frontend/                  # React + Vite application
 │   ├── src/
-│   │   ├── pages/             # Page components (Home, Login, Register, dashboards)
-│   │   ├── components/        # Reusable components (Header, Sidebar, ProtectedRoute, ThemeToggle)
+│   │   ├── pages/             # Page components (Home, Login, Register, User/Admin dashboards)
+│   │   ├── components/        # Reusable UI components (Header, ThemeToggle, ProtectedRoute)
 │   │   ├── context/           # Global state (AuthContext, ThemeContext)
-│   │   ├── services/          # API service layer (api.js, authService.js, etc.)
-│   │   ├── utils/             # Helpers, constants, validators
-│   │   ├── theme/             # Material-UI custom theme (light + dark themes)
+│   │   ├── services/          # API service layer (api.js, authService, electionService, etc.)
+│   │   ├── theme/             # Material-UI custom theme (light & dark mode configurations)
 │   │   ├── App.js             # Root app with routing
 │   │   └── index.js           # App entry point
-│   ├── public/                # Static assets
-│   ├── index.html             # Vite HTML entry (root of frontend/)
+│   ├── vercel.json            # Vercel SPA routing rewrites & security headers
 │   ├── vite.config.js         # Vite configuration
-│   ├── .env.example           # Environment variables template
 │   └── package.json
 ├── backend/                   # PHP API
 │   ├── api/
 │   │   ├── auth/              # login.php, register.php, logout.php
-│   │   ├── elections/         # CRUD endpoints for elections
-│   │   ├── candidates/        # CRUD endpoints for candidates
-│   │   ├── votes/             # submit.php, results.php, validate.php, history.php
+│   │   ├── elections/         # list.php, get.php, create.php, update.php, delete.php
+│   │   ├── candidates/        # list.php, create.php, update.php, delete.php
+│   │   ├── positions/         # list.php
+│   │   ├── votes/             # submit.php, validate.php, results.php, history.php
 │   │   ├── admin/             # stats.php, activity.php, audit-logs.php
-│   │   └── middleware/        # JWTAuth.php, AdminAuth.php, RateLimiter.php, etc.
-│   ├── config/                # database.php (PDO connection)
-│   ├── models/                # User.php, Election.php, Candidate.php, Vote.php
-│   ├── index.php              # Front controller (global CORS + request routing)
-│   ├── .env.example           # Environment variables template
+│   │   ├── health.php         # System health check endpoint
+│   │   └── middleware/        # JWTAuth, AdminAuth, RateLimiter, SecurityHeaders, etc.
+│   ├── config/                # database.php (PDO connection with Railway auto-detection)
+│   ├── index.php              # Front controller (dynamic CORS + API routing)
+│   ├── railway.json           # Railway build & start command configuration
 │   └── composer.json
 ├── database/
-│   ├── schemas/schema.sql     # MySQL table definitions
-│   ├── migrations/            # Database migration scripts
-│   ├── seeds/                 # Sample data scripts (including admin user creation)
-│   ├── setup.bat / setup.sh   # One-command database setup scripts
-│   └── README.md              # Database documentation
-├── TESTING.md                 # Comprehensive testing guide
-├── DEPLOYMENT.md              # Deployment instructions
-└── README.md                  # This file
+│   ├── schemas/schema.sql     # MySQL table schema
+│   ├── seeds/                 # Demo data & admin seeder scripts
+│   │   ├── seed_demo_data.php # Comprehensive seeder (election, candidates, 100+ votes, logs)
+│   │   └── create_admin.sql   # Standalone admin SQL script
+│   └── setup.bat / setup.sh   # One-command database setup scripts
+├── DEPLOYMENT.md              # Vercel & Railway deployment guide
+├── TESTING.md                 # Testing procedures & verification matrix
+└── README.md                  # Project overview documentation
 ```
 
 ---
 
 ## 🚀 Quick Start (Local Development)
 
-### Prerequisites
-
-- Node.js 18+ and npm
-- PHP 8.0+ with `pdo_mysql` extension enabled
-- MySQL 5.7+ or 8.0+
-- Composer (for PHP dependencies)
-
-### 1. Clone and Setup Repository
+### 1. Clone & Database Setup
 
 ```bash
-git clone <your-repo-url>
+# Clone repository
+git clone <repository-url>
 cd g3-src-evoting-system
-```
 
-### 2. Database Setup
+# Create MySQL database
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS evoting_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-#### Option A: Automated Setup (Recommended)
-
-**Windows:**
-```bash
-cd database
-setup.bat
-```
-
-**Linux/macOS:**
-```bash
-cd database
-chmod +x setup.sh
-./setup.sh
-```
-
-#### Option B: Manual Setup
-
-```bash
-# Create database
-mysql -u root -p
-```
-```sql
-CREATE DATABASE evoting_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-exit
-```
-
-```bash
 # Import schema
 mysql -u root -p evoting_system < database/schemas/schema.sql
 
-# Create default admin user
-# Windows CMD:
-type database/seeds/create_admin.sql | mysql -u root -p evoting_system
-# Windows PowerShell:
-Get-Content database/seeds/create_admin.sql | mysql -u root -p evoting_system
-# Linux/macOS:
-cat database/seeds/create_admin.sql | mysql -u root -p evoting_system
+# Seed demo data (creates active election, candidates, sample votes, admin & voter accounts)
+php database/seeds/seed_demo_data.php
 ```
 
-**Note:** The automated setup scripts handle both schema import and admin user creation automatically.
-
-### 3. Backend Setup
+### 2. Backend Setup
 
 ```bash
 cd backend
@@ -197,298 +137,79 @@ cd backend
 # Install PHP dependencies
 composer install
 
-# Copy environment template
+# Copy environment configuration
 cp .env.example .env
 
-# Edit .env with your database credentials
-# Default admin user will be created automatically:
-# Registration: A999999Z
-# Password: #adm!n@sup3r
-```
-
-**Edit `.env` file:**
-```env
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=your_mysql_password
-DB_NAME=evoting_system
-JWT_SECRET=your_secure_jwt_secret_here
-JWT_EXPIRY=900
-FRONTEND_URL=http://localhost:3000
-APP_ENV=development
-APP_DEBUG=true
-```
-
-**Start PHP server:**
-```bash
+# Start PHP built-in server (uses index.php front controller)
 php -S localhost:8000 index.php
 ```
 
-### 4. Frontend Setup
+### 3. Frontend Setup
 
 ```bash
 cd frontend
 
-# Install dependencies
+# Install Node modules
 npm install
 
-# Copy environment template
-cp .env.example .env
-
-# Edit .env to point to backend
-# Default: VITE_API_URL=http://localhost:8000
+# Start Vite development server
+cmd /c "npm run start"
 ```
 
-**Start Vite dev server:**
-```bash
-npm run start
-```
-
-### 5. Access the Application
-
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **Default Admin**: A999999Z / #adm!n@sup3r
-
-### New Features
-
-- **Dark/Light Theme Toggle**: Icon button in header allows switching between themes
-- **Improved Admin Dashboard**: Real-time statistics and activity timeline
-- **Consistent Navigation**: Icon + text header links across all pages
-- **Enhanced Security**: Clean URLs prevent file path exposure
+Access the application at `http://localhost:3000`.
 
 ---
 
-## 🏗️ Architecture
+## 🔑 Demo Credentials
 
-### Authentication Flow
-
-```
-User submits login form
-  → authService.js sends POST /api/auth/login.php
-  → Backend validates credentials, applies rate limiting
-  → Returns JWT token + user (id, role, name)
-  → AuthContext stores token in localStorage, user object in state
-  → Login.js checks user.role:
-      role === 'admin' → navigate('/admin')
-      role === 'user'  → navigate('/dashboard')
-```
-
-### Vote Submission Flow
-
-```
-Voter selects candidate and submits
-  → voteService.js sends POST /api/votes/submit.php with JWT
-  → Backend verifies token, checks election is active
-  → Voter ID hashed: SHA-256(regNumber + positionId) for anonymity
-  → Checks UNIQUE constraint on (voter_id_hash, position_id, election_id)
-  → Stores vote — voter identity is never stored directly
-  → Logs action to audit_log table
-```
-
-### CORS & Routing (Backend)
-
-```
-All requests → backend/index.php (front controller)
-  → Sets global security headers
-  → Sets global CORS headers
-  → Handles OPTIONS preflight
-  → Routes /api/auth/login.php → backend/api/auth/login.php
-  → Routes /api/elections/list.php → backend/api/elections/list.php
-  → etc.
-```
-
-### Role-Based Access Control
-
-```
-Public Routes:  /  |  /login  |  /register
-
-Voter Routes (JWT required):
-  /dashboard    → voter home with voting history
-  /voting       → cast votes
-  /results      → view results
-
-Admin Routes (JWT + role=admin required):
-  /admin        → admin dashboard with real-time stats
-  /admin/elections  → manage elections
-  /admin/candidates → manage candidates
-  /admin/results    → view vote analytics
-  /admin/audit-logs → view system audit logs
-```
+| Role | Registration No. / Username | Password | Access Rights |
+| :--- | :--- | :--- | :--- |
+| **System Administrator** | `A999999Z` | `#adm!n@sup3r` | Full admin dashboard, election/candidate management, results analytics, audit logs |
+| **Sample Voter** | `H230828V` | `Student@123` | Student dashboard, vote casting, ballot validation, personal voting history |
 
 ---
 
-## ⚙️ Configuration
+## 🏗️ Architecture & Control Flow
 
-### Backend Environment Variables
+### Dynamic CORS & Routing
+All backend API traffic routes through `backend/index.php`. It applies:
+1. Dynamic CORS origin matching (permits `http://localhost:3000`, `http://localhost:5173`, and any `https://*.vercel.app` domain).
+2. OWASP security headers (X-Frame-Options, Content-Security-Policy, X-Content-Type-Options).
+3. Expressive routing to sub-controllers in `backend/api/`.
 
-Edit `backend/.env`:
+### Railway MySQL Auto-Detection
+`backend/config/database.php` automatically parses Railway's standard environment variables (`MYSQLHOST`, `MYSQLUSER`, `MYSQLPASSWORD`, `MYSQLDATABASE`, `MYSQLPORT`, `MYSQL_URL`) alongside standard `.env` values, enabling seamless zero-config database connectivity on Railway deployments.
 
-```env
-# Database Configuration
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=your_password
-DB_NAME=evoting_system
-
-# JWT Configuration
-JWT_SECRET=your_very_long_random_secret_min_32_chars
-JWT_EXPIRY=900           # 15 minutes
-JWT_REFRESH_EXPIRY=604800 # 7 days
-
-# Frontend URL (for CORS)
-FRONTEND_URL=http://localhost:3000
-
-# Environment
-APP_ENV=development
-APP_DEBUG=true
-```
-
-### Frontend Environment Variables
-
-Edit `frontend/.env`:
-
-```env
-# Backend API URL
-VITE_API_URL=http://localhost:8000
-
-# Legacy support (optional)
-REACT_APP_API_URL=http://localhost:8000
-```
+### Tab Navigation Persistence
+`UserDashboard.js` and `AdminDashboard.js` synchronize active tab state (`Dashboard`, `Vote`, `Results`, `ManageElections`, `ManageCandidates`, `AuditLogs`) directly with browser URL parameters (e.g. `/dashboard?tab=Results`). This enables browser Back/Forward navigation without kicking users back to login.
 
 ---
 
-## 🔒 Security
+## 🔒 Security Summary
 
-### Implemented Security Measures
-
-1. **Password Security**: bcrypt hashing with salt
-2. **JWT Authentication**: Token-based auth with expiry
-3. **Rate Limiting**: 5 requests per minute on login endpoint
-4. **Input Validation**: Sanitization of all user inputs
-5. **Security Headers**: CSP, HSTS, XSS protection, clickjacking prevention
-6. **Audit Logging**: All admin actions tracked
-7. **Vote Anonymity**: SHA-256 hashing of voter IDs
-8. **Double Voting Prevention**: Database constraints
-9. **CORS Protection**: Whitelisted origins only
-10. **SQL Injection Prevention**: Prepared statements
-
-### Security Best Practices
-
-- Change default admin password immediately
-- Use strong JWT secrets in production
-- Enable HTTPS in production
-- Regular security audits
-- Keep dependencies updated
-- Monitor audit logs regularly
+1. **Password Hashing**: bcrypt algorithm with auto-generated salts.
+2. **Anonymous Voting**: Voter identity hashed using `SHA-256(regNumber + positionId + electionId)`. Voter registration IDs are never linked to vote choices.
+3. **Double Voting Prevention**: Unique composite key constraint `(voter_id_hash, position_id, election_id)` at the database level.
+4. **Rate Limiting**: IP and registration-based request throttling on sensitive endpoints.
+5. **Token Security**: Expirable JWT Bearer tokens with server-side validation and role verification.
 
 ---
 
 ## 🧪 Testing
 
-See [TESTING.md](TESTING.md) for comprehensive testing procedures including:
-
-- Local development testing
-- Integration testing
-- Security testing
-- Performance testing
-- Cross-origin testing
+Refer to [TESTING.md](TESTING.md) for full details on verifying endpoints, testing local authentication flows, and verifying production builds.
 
 ---
 
 ## 🚀 Deployment
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for deployment instructions including:
-
-- Railway backend deployment
-- Vercel frontend deployment
-- Environment configuration
-- Database setup
-- Security configuration
-- Monitoring and maintenance
+Refer to [DEPLOYMENT.md](DEPLOYMENT.md) for step-by-step instructions on deploying the frontend to **Vercel** and the PHP backend/MySQL database to **Railway**.
 
 ---
 
-## � Troubleshooting
+## 📄 License & Team
 
-### Common Issues
+Developed by **Group 3** - SRC E-Voting System Project.
+Licensed under the MIT License.
 
-#### Database Connection Failed
-
-**Error**: `SQLSTATE[HY000] [2002] Connection refused`
-
-**Solution**:
-1. Verify MySQL is running
-2. Check DB_HOST, DB_USER, DB_PASS in `.env`
-3. Ensure `pdo_mysql` extension is enabled in PHP
-
-#### CORS Errors
-
-**Error**: `Access to fetch blocked by CORS policy`
-
-**Solution**:
-1. Check FRONTEND_URL in backend `.env`
-2. Verify VITE_API_URL in frontend `.env`
-3. Ensure backend is running on correct port
-
-#### PHP Extension Issues
-
-**Error**: `Class 'PDO' not found`
-
-**Solution**:
-1. Enable `extension=pdo_mysql` in `php.ini`
-2. Restart PHP server
-3. Verify PHP version is 8.0+
-
-#### Frontend Build Errors
-
-**Error**: Module not found or build failures
-
-**Solution**:
-```bash
-cd frontend
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-```
-
-### Getting Help
-
-1. Check existing documentation files
-2. Review error logs in browser console
-3. Check PHP error logs
-4. Verify all environment variables are set
-5. Ensure all dependencies are installed
-
----
-
-## 📚 Additional Documentation
-
-- [Database Documentation](database/README.md) - Schema details and maintenance
-- [Backend Documentation](backend/README.md) - API endpoints and architecture
-- [Testing Guide](TESTING.md) - Comprehensive testing procedures
-- [Deployment Guide](DEPLOYMENT.md) - Production deployment instructions
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-## 👥 Team
-
-Group 3 - SRC E-Voting System Project
-
-**Last Updated**: 2026-06-28
+**Last Updated**: 2026-10-05

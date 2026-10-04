@@ -12,13 +12,14 @@ import {
   Alert, FormControl, InputLabel, Select, MenuItem,
 } from "@mui/material";
 import { Add, Edit, Delete } from "@mui/icons-material";
-import { getCandidates, createCandidate, updateCandidate, deleteCandidate } from "../../services/adminService";
+import { getCandidates, createCandidate, updateCandidate, deleteCandidate, getPositions } from "../../services/adminService";
 import { getAllElections } from "../../services/electionService";
 
 const ManageCandidates = () => {
   const [elections, setElections] = useState([]);
   const [selectedElection, setSelectedElection] = useState(null);
   const [candidates, setCandidates] = useState([]);
+  const [positions, setPositions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -26,7 +27,7 @@ const ManageCandidates = () => {
     name: "", bio: "", manifesto: "", photoUrl: "", videoUrl: "", positionId: "",
   });
 
-  // Fetch elections
+  // Fetch elections on mount
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -40,42 +41,52 @@ const ManageCandidates = () => {
     fetch();
   }, []);
 
-  // Fetch candidates when election changes
+  // Fetch candidates and positions when election changes
+  const fetchCandidatesAndPositions = async (electionId) => {
+    if (!electionId) return;
+    try {
+      const [candRes, posRes] = await Promise.all([
+        getCandidates(electionId),
+        getPositions(electionId),
+      ]);
+      setCandidates(candRes.data || []);
+      setPositions(posRes.data || []);
+    } catch (e) {
+      console.error("Error fetching candidates or positions:", e);
+    }
+  };
+
   useEffect(() => {
-    if (!selectedElection) return;
-    const fetch = async () => {
-      try {
-        const r = await getCandidates(selectedElection);
-        setCandidates(r.data || []);
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    fetch();
+    fetchCandidatesAndPositions(selectedElection);
   }, [selectedElection]);
 
   const handleSave = async () => {
     try {
+      if (!formData.positionId) {
+        alert("Please select a position for the candidate");
+        return;
+      }
       if (editingId) {
         await updateCandidate(editingId, formData);
       } else {
         await createCandidate({ ...formData, electionId: selectedElection });
       }
       setOpenDialog(false);
-      setSelectedElection(selectedElection); // Refetch
-      alert("Saved!");
+      fetchCandidatesAndPositions(selectedElection);
+      alert("Candidate saved successfully!");
     } catch (e) {
       alert("Error: " + e.message);
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Delete?")) {
+    if (window.confirm("Are you sure you want to delete this candidate?")) {
       try {
         await deleteCandidate(id);
-        setSelectedElection(selectedElection); // Refetch
+        fetchCandidatesAndPositions(selectedElection);
+        alert("Candidate deleted successfully!");
       } catch (e) {
-        alert("Error deleting");
+        alert("Error deleting candidate: " + e.message);
       }
     }
   };
@@ -126,7 +137,26 @@ const ManageCandidates = () => {
         <DialogTitle>{editingId ? "Edit" : "Add"} Candidate</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
           <TextField fullWidth label="Name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} margin="normal" required />
-          <TextField fullWidth label="Position ID" type="number" value={formData.positionId} onChange={(e) => setFormData({...formData, positionId: e.target.value})} margin="normal" required />
+          <FormControl fullWidth margin="normal" required>
+            <InputLabel>Position</InputLabel>
+            <Select
+              value={formData.positionId || ""}
+              label="Position"
+              onChange={(e) => setFormData({ ...formData, positionId: e.target.value })}
+            >
+              {positions.length > 0 ? (
+                positions.map((pos) => (
+                  <MenuItem key={pos.id} value={pos.id}>
+                    {pos.position_name}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem value="" disabled>
+                  No positions found for this election
+                </MenuItem>
+              )}
+            </Select>
+          </FormControl>
           <TextField fullWidth label="Bio" value={formData.bio} onChange={(e) => setFormData({...formData, bio: e.target.value})} margin="normal" multiline rows={2} />
           <TextField fullWidth label="Manifesto" value={formData.manifesto} onChange={(e) => setFormData({...formData, manifesto: e.target.value})} margin="normal" multiline rows={2} />
         </DialogContent>

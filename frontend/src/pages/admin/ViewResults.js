@@ -81,17 +81,31 @@ const ViewResults = () => {
   }, {}));
 
   // ============================================
-  // Render Loading State
+  // Render Loading / Empty / Error State
   // ============================================
   if (loading) return <Container sx={{ py: 4, textAlign: "center" }}><CircularProgress /></Container>;
   if (error) return <Container sx={{ py: 4 }}><Alert severity="error">{error}</Alert></Container>;
 
+  if (elections.length === 0) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
+          <BarChart sx={{ verticalAlign: "middle", mr: 1, fontSize: 32 }} />
+          Election Results
+        </Typography>
+        <Alert severity="info">No elections found. Please create an election first in the Elections tab.</Alert>
+      </Container>
+    );
+  }
+
   // ============================================
   // Calculate Statistics
   // ============================================
-  const totalVotes = stats.totalVotes || 0;
-  const uniqueVoters = stats.uniqueVoters || 0;
-  const turnout = uniqueVoters > 0 ? ((totalVotes / (uniqueVoters * Math.max(positions.length, 1))) * 100).toFixed(1) : 0;
+  const totalVotes = stats?.totalVotes || 0;
+  const uniqueVoters = stats?.uniqueVoters || 0;
+  const turnout = uniqueVoters > 0 && positions.length > 0
+    ? ((totalVotes / (uniqueVoters * positions.length)) * 100).toFixed(1)
+    : 0;
   const totalCandidates = results.length || 0;
 
   // ============================================
@@ -212,8 +226,10 @@ const ViewResults = () => {
             {positions.length > 0 ? (
               <Grid container spacing={3}>
                 {positions.map((pos, index) => {
-                  const winner = pos.candidates.reduce((p, c) => (p.vote_count || 0) > (c.vote_count || 0) ? p : c);
-                  const pct = pos.totalVotes > 0 ? ((winner.vote_count / pos.totalVotes) * 100).toFixed(1) : 0;
+                  const winner = pos.candidates.length > 0
+                    ? pos.candidates.reduce((p, c) => ((p.vote_count || 0) > (c.vote_count || 0) ? p : c))
+                    : { name: "No candidates", vote_count: 0 };
+                  const pct = pos.totalVotes > 0 && winner.vote_count ? ((winner.vote_count / pos.totalVotes) * 100).toFixed(1) : 0;
                   return (
                     <Grid item xs={12} md={6} key={pos.positionId}>
                       <Card sx={{ p: 3, border: "1px solid #E0E0E0", borderRadius: "0.75rem" }}>

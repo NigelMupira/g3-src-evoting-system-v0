@@ -7,6 +7,8 @@
 
 namespace App;
 
+require_once __DIR__ . '/JWTAuth.php';
+
 use Firebase\JWT\Key;
 use Firebase\JWT\JWT;
 
